@@ -1,0 +1,18 @@
+Los tests 01, 02 y 03 demuestran la funcionalidad de cómo se incrementa la cantidad de huevos de avispas a medida que los van dejando. Cuando los implementaste, ¿esos tests pasaron (los tres) de una? ¿podrías haber implementado esta funcionalidad de a partes, haciendo que pase el 01, luego el 01 y el 02 y por último el 01, 02 y 03? ¿se te ocurre cómo? Y si lograste hacerlo, ¿qué pensas de implementar esa funcionalidad de esa forma?
+
+Respuesta:
+Al momento de modelar nuestros objetos y su comportamiento lo hicimos dando los pasos mas cortos posibles, por lo que los tres test no pasaron de una, hicimos que fueran pasando de a uno y en orden. Este nos pareció un buen metodo porque al hacer de a un test a la vez pudimos agregar el comportamiento necesario a medida que iba surgiendo sin la necesidad de una extensiva documentación o planeación del problema completo.
+
+¿les quedó código repetido? ¿dónde? ¿Se animan a adivinar qué cosa del dominio les faltó representar (y por eso tienen código repetido)? Responsabilidad de dejar un huevo consumiendo otro insecto ¿Quién les quedó, en su modelo, que es el responsable de ver si hay suficientes polillas u orugas y entonces dejar un huevo? ¿el insecto (Polly, Oriana, etc) o el hábitat? ¿por qué? ¿por qué tendría sentido que fuera de la otra forma? ¿con cuál nos quedamos?
+
+Respuesta:
+Si quedó codigo repetido, por ejemplo en la implementación de los mensajes de intentar reproducirse de las avispas Oriana y Ornella. Lo que nos faltó reprensentar del dominio son las avispas en general para luego modelar cada avispa en especifico.
+	El reponsable de verificar los recursos y agregar los huevos en nuestro modelo es el habitat, porque tanto polillas, orugas, huevos y avispas existen e interactuan dentro del habitat. No vemos el sentido de que por ejemplo las avispas conozcan el dato de la cantidad de orugas o pollilas que existen, en cambio, si tiene sentido que esta información la tenga el habitat.
+
+Con lo que vimos en la clase del Jueves (en la parte teórica, prototipos vs clases) ¿cómo sacarían este código? Sobre la implementación ¿cómo resolvieron guardar los huevos? ¿Usaron colecciones? ¿Diccionarios? ¿Uno, varios? ¿con qué indexaban? Pero la pregunta más importante: ¿es lo más sencillo que hacía falta? ¿o se podía hacer menos y todo andaba?
+
+Respuesta: 
+Con la idea de clases vista en la clase del jueves se puede sacar el codigo repetido, hay que crear una idea general de avispa
+e ir haciendo instancias de esta para cada tipo de avispa del modelo.
+	Al principio para guardar los huevos alcanzaba con tener un colaborador interno que guardara la cantidad, luego se agregó la funcionalidad de poder saber la descendencia genética del huevo, por lo que decidimos usar un diccionario para organizar esta información, donde las claves son la firma genética de la avispa que puso el huevo.
+	Esta solución fue sencilla pero igualmente nos dimos cuenta que habia una más simple, agregando mas colaboradores internos al habitat que hagan referencia a la cantidad de huevos que tenía cada firma genética. Esta era una posible solución más simple que andaba en el modelo actual.
