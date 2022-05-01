@@ -1,4 +1,4 @@
-!classDefinition: #CantSuspend category: #'CodigoRepetido-Ejercicio'!
+!classDefinition: #CantSuspend category: 'CodigoRepetido-Ejercicio'!
 Error subclass: #CantSuspend
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -6,7 +6,7 @@ Error subclass: #CantSuspend
 	category: 'CodigoRepetido-Ejercicio'!
 
 
-!classDefinition: #NotFound category: #'CodigoRepetido-Ejercicio'!
+!classDefinition: #NotFound category: 'CodigoRepetido-Ejercicio'!
 Error subclass: #NotFound
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -14,44 +14,53 @@ Error subclass: #NotFound
 	category: 'CodigoRepetido-Ejercicio'!
 
 
-!classDefinition: #CustomerBookTest category: #'CodigoRepetido-Ejercicio'!
+!classDefinition: #CustomerBookTest category: 'CodigoRepetido-Ejercicio'!
 TestCase subclass: #CustomerBookTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'CodigoRepetido-Ejercicio'!
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 4/3/2019 10:50:19'!
-test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:00:05'!
+medirTiempoDe: unBloque conElCliente: unCliente
 
-	| customerBook millisecondsBeforeRunning millisecondsAfterRunning |
+	|  millisecondsBeforeRunning millisecondsAfterRunning |
 	
-	customerBook := CustomerBook new.
-	
+	"customerBook := CustomerBook new."
+
 	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
-	customerBook addCustomerNamed: 'John Lennon'.
+	unBloque value: unCliente.
 	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
 	
-	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < (50 * millisecond)
+	^millisecondsAfterRunning-millisecondsBeforeRunning
+	
+	
+	
+	
 	
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 4/3/2019 10:50:13'!
-test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:03:09'!
+test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
 
-	| customerBook millisecondsBeforeRunning millisecondsAfterRunning paulMcCartney |
+	| tiempoQueTardo customerBook|
+	customerBook := CustomerBook new.
+	tiempoQueTardo := self medirTiempoDe: [ :unaPersona | customerBook addCustomerNamed: unaPersona ] conElCliente: 'John Lennon'.
+	
+	self assert: (tiempoQueTardo) < (50 * millisecond)! !
+
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:05:56'!
+test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
+	
+	| tiempoQueTardo customerBook |
 	
 	customerBook := CustomerBook new.
-	paulMcCartney := 'Paul McCartney'.
 	
-	customerBook addCustomerNamed: paulMcCartney.
-	  
-	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
-	customerBook removeCustomerNamed: paulMcCartney.
-	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
+	customerBook addCustomerNamed: 'paulMcCartney'.
 	
-	self assert: (millisecondsAfterRunning-millisecondsBeforeRunning) < (100 * millisecond)
+	tiempoQueTardo := self medirTiempoDe: [ :unaPersona | customerBook removeCustomerNamed: unaPersona ] conElCliente: 'paulMcCartney'.
 	
+	self assert: (tiempoQueTardo) < (100 * millisecond)
 ! !
 
 !CustomerBookTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
@@ -162,7 +171,7 @@ test08CanNotSuspendAnAlreadySuspendedCustomer
 ! !
 
 
-!classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
+!classDefinition: #CustomerBook category: 'CodigoRepetido-Ejercicio'!
 Object subclass: #CustomerBook
 	instanceVariableNames: 'suspended active'
 	classVariableNames: ''
@@ -257,7 +266,7 @@ suspendCustomerNamed: aName
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'CustomerBook class' category: #'CodigoRepetido-Ejercicio'!
+!classDefinition: 'CustomerBook class' category: 'CodigoRepetido-Ejercicio'!
 CustomerBook class
 	instanceVariableNames: ''!
 
