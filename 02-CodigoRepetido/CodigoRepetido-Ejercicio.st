@@ -21,35 +21,18 @@ TestCase subclass: #CustomerBookTest
 	poolDictionaries: ''
 	category: 'CodigoRepetido-Ejercicio'!
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:00:05'!
-medirTiempoDe: unBloque conElCliente: unCliente
-
-	|  millisecondsBeforeRunning millisecondsAfterRunning |
-	
-	"customerBook := CustomerBook new."
-
-	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
-	unBloque value: unCliente.
-	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
-	
-	^millisecondsAfterRunning-millisecondsBeforeRunning
-	
-	
-	
-	
-	
-! !
-
-!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:03:09'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:28:31'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
 
 	| tiempoQueTardo customerBook|
+	
 	customerBook := CustomerBook new.
+	
 	tiempoQueTardo := self medirTiempoDe: [ :unaPersona | customerBook addCustomerNamed: unaPersona ] conElCliente: 'John Lennon'.
 	
-	self assert: (tiempoQueTardo) < (50 * millisecond)! !
+	self assertTiempoTardado: tiempoQueTardo menorA: 50.! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:05:56'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 16:28:54'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 	| tiempoQueTardo customerBook |
@@ -60,7 +43,8 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 	tiempoQueTardo := self medirTiempoDe: [ :unaPersona | customerBook removeCustomerNamed: unaPersona ] conElCliente: 'paulMcCartney'.
 	
-	self assert: (tiempoQueTardo) < (100 * millisecond)
+	self assertTiempoTardado: tiempoQueTardo menorA: 100.
+	
 ! !
 
 !CustomerBookTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
@@ -77,97 +61,137 @@ test03CanNotAddACustomerWithEmptyName
 			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
 			self assert: customerBook isEmpty ]! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'HAW 8/28/2017 08:57:25'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 18:11:22'!
 test04CanNotRemoveAnInvalidCustomer
 	
-	| customerBook johnLennon |
+	| customerBook unCliente |
 			
 	customerBook := CustomerBook new.
-	johnLennon := 'John Lennon'.
-	customerBook addCustomerNamed: johnLennon.
-	
-	[ customerBook removeCustomerNamed: 'Paul McCartney'.
-	self fail ]
-		on: NotFound 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
-! !
+	unCliente := 'JohnLennon'.
+	customerBook addCustomerNamed: unCliente .
+		
+	self assertEjecutar: [:unCustomerBook :Cliente | unCustomerBook removeCustomerNamed: Cliente ]
+		con: 'Paul McCartney' en: customerBook lanzaLaExcepcion: NotFound .! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 4/3/2019 10:50:25'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 17:09:53'!
 test05SuspendingACustomerShouldNotRemoveItFromCustomerBook
 
-	| customerBook paulMcCartney|
+	| customerBook unCliente|
 	
-	customerBook := CustomerBook new.
-	paulMcCartney := 'Paul McCartney'.
+	unCliente := 'Paul McCartney'.
+	customerBook  := self enUnLibroNuevoAgregarYSuspenderA: unCliente .
 	
-	customerBook addCustomerNamed: paulMcCartney.
-	customerBook suspendCustomerNamed: paulMcCartney.
-	
-	self assert: 0 equals: customerBook numberOfActiveCustomers.
-	self assert: 1 equals: customerBook numberOfSuspendedCustomers.
-	self assert: 1 equals: customerBook numberOfCustomers.
-	self assert: (customerBook includesCustomerNamed: paulMcCartney).
+	self assertCantidadActivos: 0 cantidadSuspendidos: 1 YCantidadTotalEn: customerBook.
+	self assert: (customerBook includesCustomerNamed: unCliente ).
 	
 
 	
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 4/3/2019 10:50:28'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 17:09:59'!
 test06RemovingASuspendedCustomerShouldRemoveItFromCustomerBook
 
-	| customerBook paulMcCartney|
+	| customerBook unCliente|
 	
-	customerBook := CustomerBook new.
-	paulMcCartney := 'Paul McCartney'.
+	unCliente := 'Paul McCartney'.
+	customerBook := self enUnLibroNuevoAgregarYSuspenderA: unCliente.
+	customerBook removeCustomerNamed: unCliente.
 	
-	customerBook addCustomerNamed: paulMcCartney.
-	customerBook suspendCustomerNamed: paulMcCartney.
-	customerBook removeCustomerNamed: paulMcCartney.
-	
-	self assert: 0 equals: customerBook numberOfActiveCustomers.
-	self assert: 0 equals: customerBook numberOfSuspendedCustomers.
-	self assert: 0 equals: customerBook numberOfCustomers.
-	self deny: (customerBook includesCustomerNamed: paulMcCartney).
+	self assertCantidadActivos: 0 cantidadSuspendidos: 0 YCantidadTotalEn: customerBook.
+	self deny: (customerBook includesCustomerNamed: unCliente ).
 
 
 	
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 4/30/2020 09:08:46'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 18:10:41'!
 test07CanNotSuspendAnInvalidCustomer
 	
-	| customerBook johnLennon |
+	| customerBook unCliente |
 			
 	customerBook := CustomerBook new.
-	johnLennon := 'John Lennon'.
-	customerBook addCustomerNamed: johnLennon.
+	unCliente := 'JohnLennon'.
+	customerBook addCustomerNamed: unCliente.
 	
-	[ customerBook suspendCustomerNamed: 'Ringo Starr'.
-	self fail ]
-		on: CantSuspend 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+	self assertEjecutar: [:unCustomerBook :Cliente | unCustomerBook suspendCustomerNamed: Cliente ]
+		con: 'Ringo Starr' en: customerBook 		lanzaLaExcepcion: CantSuspend.
 ! !
 
-!CustomerBookTest methodsFor: 'testing' stamp: 'NR 9/19/2018 17:57:11'!
+!CustomerBookTest methodsFor: 'testing' stamp: 'e 5/1/2022 18:11:04'!
 test08CanNotSuspendAnAlreadySuspendedCustomer
 	
-	| customerBook johnLennon |
+	| customerBook unCliente |
 			
 	customerBook := CustomerBook new.
-	johnLennon := 'John Lennon'.
-	customerBook addCustomerNamed: johnLennon.
-	customerBook suspendCustomerNamed: johnLennon.
+	unCliente := 'JohnLennon'.
+	customerBook addCustomerNamed: unCliente .
+	customerBook suspendCustomerNamed: 	unCliente.
 	
-	[ customerBook suspendCustomerNamed: johnLennon.
+	self assertEjecutar: [:unCustomerBook :Cliente | unCustomerBook suspendCustomerNamed: Cliente ]
+		con: 'JohnLennon' en: customerBook 	lanzaLaExcepcion: CantSuspend.
+! !
+
+
+!CustomerBookTest methodsFor: 'privado' stamp: 'e 5/1/2022 17:10:07'!
+assertCantidadActivos: valorUno cantidadSuspendidos: valorDos YCantidadTotalEn: unCustomerBook 
+	
+	self assert: valorUno equals: unCustomerBook numberOfActiveCustomers.
+	self assert: valorDos equals: unCustomerBook numberOfSuspendedCustomers.
+	self assert: (valorUno + valorDos) equals: unCustomerBook numberOfCustomers.
+	
+! !
+
+!CustomerBookTest methodsFor: 'privado' stamp: 'e 5/1/2022 17:55:33'!
+assertEjecutar: unBloque con: unCliente en: unCustomerBook lanzaLaExcepcion: unaExcepcion
+
+	[ (unBloque value: unCustomerBook value: unCliente) .
 	self fail ]
-		on: CantSuspend 
+		on: unaExcepcion 
 		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+			self assert: unCustomerBook numberOfCustomers equals: 1.
+			self assert: (unCustomerBook includesCustomerNamed: 'JohnLennon') ]
+	
+	
+	
+	
+	
+! !
+
+!CustomerBookTest methodsFor: 'privado' stamp: 'e 5/1/2022 17:44:11'!
+assertTiempoTardado: unTiempoQueTardo menorA: unTiempo
+	
+	^self assert: (unTiempoQueTardo ) < (unTiempo * millisecond)
+	
+! !
+
+!CustomerBookTest methodsFor: 'privado' stamp: 'e 5/1/2022 16:50:22'!
+enUnLibroNuevoAgregarYSuspenderA: unCliente
+
+	| customerBook |
+	
+	customerBook := CustomerBook new.
+	
+	customerBook addCustomerNamed: unCliente.
+	customerBook suspendCustomerNamed: unCliente.
+	^customerBook 
+	
+! !
+
+!CustomerBookTest methodsFor: 'privado' stamp: 'e 5/1/2022 16:19:47'!
+medirTiempoDe: unBloque conElCliente: unCliente
+
+	|  millisecondsBeforeRunning millisecondsAfterRunning |
+
+	millisecondsBeforeRunning := Time millisecondClockValue * millisecond.
+	unBloque value: unCliente.
+	millisecondsAfterRunning := Time millisecondClockValue * millisecond.
+	
+	^millisecondsAfterRunning-millisecondsBeforeRunning
+	
+	
+	
+	
+	
 ! !
 
 
