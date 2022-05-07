@@ -375,10 +375,15 @@ Numero subclass: #Entero
 	poolDictionaries: ''
 	category: 'Numeros-Parte2-Ejercicio'!
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:13'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 10:19:36'!
 * aMultiplier 
+"
+	(aMultiplier isKindOf: self class) ifTrue: [^self class with: value * aMultiplier integerValue].
+
+	(aMultiplier isKindOf: Fraccion) ifTrue: [^self * aMultiplier numerator / aMultiplier denominator].	
+"
 	
-	^self class with: value * aMultiplier integerValue
+	^aMultiplier multiplicarmeAUnEntero: self.
 	! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'am 5/5/2022 20:53:34'!
@@ -391,15 +396,21 @@ Numero subclass: #Entero
 "
 	^anAdder sumarmeAUnEntero: self.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:40:37'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 10:04:08'!
 - aSubtrahend 
 	
-	^ self class with: value - aSubtrahend integerValue.! !
+	(aSubtrahend isKindOf: self class) ifTrue: [^ self class with: value - aSubtrahend integerValue].
+	
+	(aSubtrahend isKindOf: Fraccion) ifTrue: [^(self * aSubtrahend denominator) - aSubtrahend numerator / aSubtrahend denominator].
+	
+	"^ self class with: value - aSubtrahend integerValue."! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 09:49:12'!
 / aDivisor 
 	
-	^Fraccion with: self over: aDivisor! !
+	(aDivisor isKindOf: self class) ifTrue: [^Fraccion with: self over: aDivisor].
+	
+	(aDivisor isKindOf: Fraccion) ifTrue: [^self * aDivisor denominator / aDivisor numerator].! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HAW 9/24/2018 08:47:50'!
 fibonacci
@@ -474,6 +485,16 @@ greatestCommonDivisorWith: anEntero
 	^self class with: (value gcd: anEntero integerValue)! !
 
 
+!Entero methodsFor: 'as yet unclassified' stamp: 'am 5/7/2022 10:13:38'!
+multiplicarmeAUnEntero: enteroAMultiplicar
+
+ 	^self class with: value * enteroAMultiplicar integerValue! !
+
+!Entero methodsFor: 'as yet unclassified' stamp: 'am 5/7/2022 10:25:21'!
+multiplicarmeAUnaFraccion: unaFraccionAMultiplicar
+
+	^self * unaFraccionAMultiplicar numerator / unaFraccionAMultiplicar denominator! !
+
 !Entero methodsFor: 'as yet unclassified' stamp: 'am 5/5/2022 20:53:34'!
 sumarmeAUnEntero: unEnteroASumar
 
@@ -510,10 +531,16 @@ Numero subclass: #Fraccion
 	poolDictionaries: ''
 	category: 'Numeros-Parte2-Ejercicio'!
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 10:27:12'!
 * aMultiplier 
+
+"
+	(aMultiplier isKindOf: Entero) ifTrue: [^aMultiplier * numerator / denominator].
+
+	(aMultiplier isKindOf: self class) ifTrue: [^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator)].	
+"
 	
-	^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator)
+	^aMultiplier multiplicarmeAUnaFraccion: self.
 	! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'am 5/5/2022 20:54:41'!
@@ -535,21 +562,31 @@ Numero subclass: #Fraccion
 	
  ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'NR 9/23/2018 23:43:50'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 10:07:38'!
 - aSubtrahend 
 	
+	
+	(aSubtrahend isKindOf: self class) ifTrue: [
 	| newNumerator newDenominator |
 	
 	newNumerator := (numerator * aSubtrahend denominator) - (denominator * aSubtrahend numerator).
 	newDenominator := denominator * aSubtrahend denominator.
 	
 	^newNumerator / newDenominator 
+	].
+
+	(aSubtrahend isKindOf: Entero) ifTrue: [^numerator - (aSubtrahend * denominator) / denominator].	
+	
 ! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'am 5/7/2022 09:52:48'!
 / aDivisor 
+
+	(aDivisor isKindOf: self class) ifTrue: [^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)].
 	
-	^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)! !
+	(aDivisor isKindOf: Entero) ifTrue: [^ numerator / (aDivisor * denominator)].
+	
+	"^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)"! !
 
 
 !Fraccion methodsFor: 'comparing' stamp: 'HernanWilkinson 5/7/2016 20:42'!
@@ -609,6 +646,16 @@ printOn: aStream
 		nextPut: $/;
 		print: denominator ! !
 
+
+!Fraccion methodsFor: 'as yet unclassified' stamp: 'am 5/7/2022 10:16:39'!
+multiplicarmeAUnEntero: unEnteroAMultiplicar
+
+	^unEnteroAMultiplicar * numerator / denominator! !
+
+!Fraccion methodsFor: 'as yet unclassified' stamp: 'am 5/7/2022 10:25:45'!
+multiplicarmeAUnaFraccion: unaFraccionAMultiplicar
+
+	^(numerator * unaFraccionAMultiplicar numerator) / (denominator * unaFraccionAMultiplicar denominator)! !
 
 !Fraccion methodsFor: 'as yet unclassified' stamp: 'am 5/7/2022 09:18:22'!
 sumarmeAUnEntero: unEnteroASumar
