@@ -1,0 +1,32 @@
+## Preguntas teóricas
+
+### Aporte de los mensajes de DD
+En un double dispatch (DD), ¿qué información aporta cada uno de los dos llamados?
+
+Respuesta:
+La idea de un double dispatch es poder trabajar cuando dos objetos que estan colaborando son de tipo variable, en el primer llamado se obtiene información de la primer variable polimórfica, pero esto aun no es suficiente, porque nuestro segundo colaborador también es variable, por lo que se hace un segundo envio de mensaje polimorfico para conocerlo.
+
+### Lógica de instanciado
+Con lo que vieron y saben hasta ahora, ¿donde les parece mejor tener la lógica de cómo instanciar un objeto? ¿por qué? ¿Y si se crea ese objeto desde diferentes lugares y de diferentes formas? ¿cómo lo resuelven?
+
+Respuesta:
+La logica de instanciar un objeto parece encajar mejor entre los mensajes de las clases concretas de la jerarquia, ya que las clases abstactas no deben ser instanciadas porque no representan un objeto en específico del mundo real, solo una idea, por lo que no son las que deben tener la responsabilidad de instanciar a sus sublclases concretas.
+El objeto es el que guarda la logica para instanciarse, si se quiere crearlo en diferentes lugares y de diferentes formas se pueden crear nuevos mensajes usando como base el mensaje del objeto que sabe instanciarlo.
+
+### Nombres de las categorías de métodos
+Con lo que vieron y trabajaron hasta ahora, ¿qué criterio están usando para categorizar métodos?
+
+Respuesta:
+Primero analizamos que tipo de "acciones" realizan o que funciones cumplen los metodos, y los clasificamos segun estos. Tambien vemos quien usa los mensajes, ya que si solo los utiliza la misma clase entrarian en la categoria de 'privados'.
+
+### Subclass Responsibility
+Si todas las subclases saben responder un mismo mensaje, ¿por qué ponemos ese mensaje sólo con un “self subclassResponsibility” en la superclase? ¿para qué sirve?
+
+Respuesta:
+Esto se hace para aclarar que ese mensaje esta implementado en cada subclase segun los criterios que tenga cada una, pero siempre con el mismo comportamiento y/o tipo de resultado. Y consecuente a esto, si luego queremos crear una nueva subclase, este mensaje nos sirve para saber que tenemos que implemtarlo en ella.
+
+### No rompas
+¿Por qué está mal/qué problemas trae romper encapsulamiento?
+
+Respuesta:
+Al romper encapsulamiento le estamos dando a un objeto muchas o mas responsabilidades de las que deberia tener según el dominio que se quiera representar. Esto puede llevar a que, por ejemplo, modifiquemos cosas de un objeto 'C' dentro del objeto 'A', siendo que estos en nuestro dominio no deberian conocer la existencia del otro o no deberian tener relacion alguna.
