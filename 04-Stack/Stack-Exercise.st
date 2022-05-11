@@ -1,4 +1,4 @@
-!classDefinition: #OOStackTest category: #'Stack-Exercise'!
+!classDefinition: #OOStackTest category: 'Stack-Exercise'!
 TestCase subclass: #OOStackTest
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -137,7 +137,7 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 ! !
 
 
-!classDefinition: #SentenceFinderByPrefixTest category: #'Stack-Exercise'!
+!classDefinition: #SentenceFinderByPrefixTest category: 'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -145,18 +145,55 @@ TestCase subclass: #SentenceFinderByPrefixTest
 	category: 'Stack-Exercise'!
 
 
-!classDefinition: #OOStack category: #'Stack-Exercise'!
+!classDefinition: #OOStack category: 'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'stack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
+!OOStack methodsFor: 'initialization' stamp: 'e 5/11/2022 15:54:54'!
+initialize
+
+	stack := OrderedCollection new.! !
+
+
+!OOStack methodsFor: 'removing' stamp: 'e 5/11/2022 16:19:55'!
+pop
+	
+	self isEmpty ifTrue: [ self error: 'Stack is empty'].
+	
+	^stack removeLast.! !
+
+
+!OOStack methodsFor: 'adding' stamp: 'e 5/11/2022 15:59:51'!
+push: unElemento
+
+	stack add: unElemento.! !
+
+
+!OOStack methodsFor: 'accessing' stamp: 'e 5/11/2022 16:22:52'!
+isEmpty
+
+	^stack size = 0.! !
+
+!OOStack methodsFor: 'accessing' stamp: 'e 5/11/2022 16:11:51'!
+size
+
+	^stack size! !
+
+!OOStack methodsFor: 'accessing' stamp: 'e 5/11/2022 16:22:19'!
+top
+
+	self isEmpty ifTrue: [ self error: 'Stack is empty'].
+	
+	^stack last! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'OOStack class' category: #'Stack-Exercise'!
+!classDefinition: 'OOStack class' category: 'Stack-Exercise'!
 OOStack class
-	instanceVariableNames: ''!
+	instanceVariableNames: 'stack'!
 
 !OOStack class methodsFor: 'error descriptions' stamp: 'HernanWilkinson 5/7/2012 11:51'!
 stackEmptyErrorDescription
@@ -164,7 +201,7 @@ stackEmptyErrorDescription
 	^ 'Stack is empty'! !
 
 
-!classDefinition: #SentenceFinderByPrefix category: #'Stack-Exercise'!
+!classDefinition: #SentenceFinderByPrefix category: 'Stack-Exercise'!
 Object subclass: #SentenceFinderByPrefix
 	instanceVariableNames: ''
 	classVariableNames: ''
