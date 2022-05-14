@@ -139,10 +139,64 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #SentenceFinderByPrefix category: 'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefix
-	instanceVariableNames: ''
+	instanceVariableNames: 'stack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 10:01:08'!
+add: aSentence
+	
+	
+	stack push: aSentence 
+
+		! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:12:38'!
+find: aPrefix
+
+	| otherStack result elem |
+	
+	otherStack := OOStack new.
+	result := OrderedCollection new.
+	
+	(stack size) timesRepeat: [
+			elem := stack pop.
+			otherStack push: elem.
+			(elem beginsWith: aPrefix) ifTrue: [ result add: elem ]
+		].
+	self intercambiarPilas: otherStack y: stack.
+	^result.! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:50:53'!
+initialize
+
+	stack := OOStack new.! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:16:18'!
+intercambiarPilas: original y: copia
+	
+	| elem |
+	original size timesRepeat: [
+		elem := original pop.
+		copia push: elem.
+		].
+		! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:55:02'!
+isEmpty
+	
+	^stack isEmpty.! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:10:01'!
+pop
+	
+	^stack pop.! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 10:50:52'!
+size 
+
+	^stack size! !
 
 
 !classDefinition: #SentenceFinderByPrefixTest category: 'Stack-Exercise'!
@@ -151,6 +205,140 @@ TestCase subclass: #SentenceFinderByPrefixTest
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:47:28'!
+test01FindEncuentraLaUnicaPalabraCorrecta
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	
+	result := OrderedCollection
+		with: 'The winds of Winter'.
+	
+	self assert: (sentenceFinder find: 'The') = result.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:46:39'!
+test02FindEncuentraLasPalabrasCorrectas
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'winter is here'.
+	
+	result := OrderedCollection
+		with:'winter is here'
+		with: 'winning is everything'.
+	
+	self assert: (sentenceFinder find: 'win') = result.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:45:23'!
+test03FindSoloDetectaElPrefijoSiEstaAlInicioDeLaOracion
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'Winter is here'.
+	
+	result := OrderedCollection new.
+	
+	self assert: (sentenceFinder find: 'every') = result.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:51:28'!
+test04SiNoSeEncuentraElPrefijoFindDevuelveUnaCollectionVacia
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'Winter is here'.
+	
+	result := OrderedCollection new.
+	
+	self assert: (sentenceFinder find: 'dog') = result.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:54:37'!
+test05FindEsCaseSensitive
+
+	| sentenceFinder upperCaseResult lowerCaseResult|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'Winter is here'.
+	
+	upperCaseResult := OrderedCollection
+		with:'Winter is here'.
+	lowerCaseResult := OrderedCollection
+		with:'winning is everything'.
+		
+	self assert: (sentenceFinder find: 'win') = lowerCaseResult .
+	self assert: (sentenceFinder find: 'Win') = upperCaseResult .! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:12:13'!
+test06FindNoCambiaLosElementosDeLaPila
+
+	| sentenceFinder result pila lista elem |
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'winning is everything'.
+	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'winter is here'.
+	
+	result := OrderedCollection
+		with: 'winter is here'
+		with: 'The winds of Winter'
+		with: 'winning is everything'.
+		
+	sentenceFinder find: 'win'.
+	
+	pila := OOStack new.
+	lista := OrderedCollection new.
+	
+	sentenceFinder size timesRepeat: [
+		elem := sentenceFinder pop.
+		pila push: elem.
+		lista add: elem.
+		].
+	
+	pila size timesRepeat: [
+		elem := pila pop.
+		sentenceFinder add: elem.
+		].
+	
+	self assert: lista = result.
+	
+	! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:29:14'!
+test07SiLaOracionEsParteDelPrefijoNoLaAgrega
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	sentenceFinder add: 'The winds'.
+	
+	result := OrderedCollection new.
+	
+	self assert: (sentenceFinder find: 'The winds of') = result.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:17:04'!
+test08SiNoHayOracionesFindNoEncuentraNada
+
+	| sentenceFinder result|
+	
+	sentenceFinder := SentenceFinderByPrefix new.
+	
+	result := OrderedCollection new.
+	
+	self assert: (sentenceFinder find: 'win') = result.! !
 
 
 !classDefinition: #OOStack category: 'Stack-Exercise'!
