@@ -144,44 +144,50 @@ TestCase subclass: #SentenceFinderByPrefix
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 10:01:08'!
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:07:39'!
 add: aSentence
-	
 	
 	stack push: aSentence 
 
 		! !
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:12:38'!
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:09:50'!
+asOrderedCollection
+	
+	| aCollection |
+	
+	aCollection := OrderedCollection new.
+	self size timesRepeat: [ aCollection add: self pop 	].
+	
+	aCollection reverseDo: [ :otherSentence | self add: otherSentence ].
+	
+	^aCollection ! !
+
+!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:16:52'!
 find: aPrefix
 
-	| otherStack result elem |
+"	| otherSentenceFinder result aSentence |
 	
-	otherStack := OOStack new.
+	otherSentenceFinder := SentenceFinderByPrefix new.
 	result := OrderedCollection new.
 	
-	(stack size) timesRepeat: [
-			elem := stack pop.
-			otherStack push: elem.
-			(elem beginsWith: aPrefix) ifTrue: [ result add: elem ]
+	self size timesRepeat: [
+			aSentence := self pop.
+			otherSentenceFinder add: aSentence.
+			(aSentence beginsWith: aPrefix) ifTrue: [ result add: aSentence ]
 		].
-	self intercambiarPilas: otherStack y: stack.
-	^result.! !
+	otherSentenceFinder transferTo: self.
+	^result. 
+"
+	| aCollection |
+	
+	aCollection := self asOrderedCollection.
+	^aCollection select: [ :aSentence | aSentence beginsWith: aPrefix].! !
 
 !SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:50:53'!
 initialize
 
 	stack := OOStack new.! !
-
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:16:18'!
-intercambiarPilas: original y: copia
-	
-	| elem |
-	original size timesRepeat: [
-		elem := original pop.
-		copia push: elem.
-		].
-		! !
 
 !SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:55:02'!
 isEmpty
@@ -206,8 +212,8 @@ TestCase subclass: #SentenceFinderByPrefixTest
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:47:28'!
-test01FindEncuentraLaUnicaPalabraCorrecta
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 21:09:09'!
+test01FindEncuentraLaUnicaOracionCorrecta
 
 	| sentenceFinder result|
 	
@@ -220,8 +226,8 @@ test01FindEncuentraLaUnicaPalabraCorrecta
 	
 	self assert: (sentenceFinder find: 'The') = result.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:46:39'!
-test02FindEncuentraLasPalabrasCorrectas
+!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 21:09:30'!
+test02FindEncuentraLasOracionesCorrectas
 
 	| sentenceFinder result|
 	
