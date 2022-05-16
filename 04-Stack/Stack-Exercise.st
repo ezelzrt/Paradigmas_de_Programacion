@@ -144,14 +144,7 @@ TestCase subclass: #SentenceFinderByPrefix
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:07:39'!
-add: aSentence
-	
-	stack push: aSentence 
-
-		! !
-
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:09:50'!
+!SentenceFinderByPrefix methodsFor: 'converting' stamp: 'e 5/15/2022 20:27:54'!
 asOrderedCollection
 	
 	| aCollection |
@@ -159,192 +152,184 @@ asOrderedCollection
 	aCollection := OrderedCollection new.
 	self size timesRepeat: [ aCollection add: self pop 	].
 	
-	aCollection reverseDo: [ :otherSentence | self add: otherSentence ].
+	aCollection reverseDo: [ :aSentence | self add: aSentence ].
 	
 	^aCollection ! !
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/15/2022 20:16:52'!
-find: aPrefix
 
-"	| otherSentenceFinder result aSentence |
+!SentenceFinderByPrefix methodsFor: 'adding' stamp: 'e 5/15/2022 20:07:39'!
+add: aSentence
 	
-	otherSentenceFinder := SentenceFinderByPrefix new.
-	result := OrderedCollection new.
-	
-	self size timesRepeat: [
-			aSentence := self pop.
-			otherSentenceFinder add: aSentence.
-			(aSentence beginsWith: aPrefix) ifTrue: [ result add: aSentence ]
-		].
-	otherSentenceFinder transferTo: self.
-	^result. 
-"
-	| aCollection |
-	
-	aCollection := self asOrderedCollection.
-	^aCollection select: [ :aSentence | aSentence beginsWith: aPrefix].! !
+	stack push: aSentence 
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:50:53'!
+		! !
+
+
+!SentenceFinderByPrefix methodsFor: 'initialization' stamp: 'e 5/14/2022 09:50:53'!
 initialize
 
 	stack := OOStack new.! !
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 09:55:02'!
+
+!SentenceFinderByPrefix methodsFor: 'validation' stamp: 'e 5/16/2022 17:07:19'!
+isValid: aPrefix
+	
+	| aError | 
+	aError := [ self error: self class invalidPrefixErrorDescription ].
+	(aPrefix class = String) ifFalse: aError.
+	((aPrefix findString: ' ') = 0) ifFalse: aError .
+	(aPrefix = '') ifTrue: aError
+	! !
+
+
+!SentenceFinderByPrefix methodsFor: 'accessing' stamp: 'e 5/16/2022 16:04:48'!
+find: aPrefix
+
+	| aCollection |
+	
+	self isValid: aPrefix.
+	
+	aCollection := self asOrderedCollection.
+	^aCollection select: [ :aSentence | aSentence beginsWith: aPrefix].! !
+
+!SentenceFinderByPrefix methodsFor: 'accessing' stamp: 'e 5/14/2022 09:55:02'!
 isEmpty
 	
 	^stack isEmpty.! !
 
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:10:01'!
-pop
-	
-	^stack pop.! !
-
-!SentenceFinderByPrefix methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 10:50:52'!
+!SentenceFinderByPrefix methodsFor: 'accessing' stamp: 'e 5/14/2022 10:50:52'!
 size 
 
 	^stack size! !
 
+
+!SentenceFinderByPrefix methodsFor: 'removing' stamp: 'am 5/14/2022 12:10:01'!
+pop
+	
+	^stack pop.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'SentenceFinderByPrefix class' category: 'Stack-Exercise'!
+SentenceFinderByPrefix class
+	instanceVariableNames: ''!
+
+!SentenceFinderByPrefix class methodsFor: 'as yet unclassified' stamp: 'e 5/16/2022 16:20:26'!
+invalidPrefixErrorDescription
+
+	^'Prefijo invalido'! !
+
 
 !classDefinition: #SentenceFinderByPrefixTest category: 'Stack-Exercise'!
 TestCase subclass: #SentenceFinderByPrefixTest
-	instanceVariableNames: ''
+	instanceVariableNames: 'sentenceFinder'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 21:09:09'!
-test01FindEncuentraLaUnicaOracionCorrecta
+!SentenceFinderByPrefixTest methodsFor: 'setup' stamp: 'e 5/15/2022 21:15:29'!
+setUp
 
-	| sentenceFinder result|
-	
 	sentenceFinder := SentenceFinderByPrefix new.
 	sentenceFinder add: 'winning is everything'.
 	sentenceFinder add: 'The winds of Winter'.
+	sentenceFinder add: 'Winter is here'.
+	sentenceFinder add: 'win every day'.
+	sentenceFinder add: 'work'.! !
+
+
+!SentenceFinderByPrefixTest methodsFor: 'private' stamp: 'e 5/16/2022 16:49:43'!
+assertFindFallaConElPrefijo: aPrefix
 	
-	result := OrderedCollection
-		with: 'The winds of Winter'.
+	self
+		should: [ sentenceFinder find: aPrefix ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: anError messageText = SentenceFinderByPrefix invalidPrefixErrorDescription ].! !
+
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 16:12:15'!
+test01FindEncuentraLaUnicaOracionCorrecta
+
+	| result |
+	result := OrderedCollection with: 'The winds of Winter'.
 	
 	self assert: (sentenceFinder find: 'The') = result.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'e 5/14/2022 21:09:30'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:32:14'!
 test02FindEncuentraLasOracionesCorrectas
 
-	| sentenceFinder result|
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'winning is everything'.
-	sentenceFinder add: 'The winds of Winter'.
-	sentenceFinder add: 'winter is here'.
-	
+	| result |
+
 	result := OrderedCollection
-		with:'winter is here'
+		with: 'win every day'
 		with: 'winning is everything'.
 	
 	self assert: (sentenceFinder find: 'win') = result.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:45:23'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:32:07'!
 test03FindSoloDetectaElPrefijoSiEstaAlInicioDeLaOracion
 
-	| sentenceFinder result|
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'winning is everything'.
-	sentenceFinder add: 'The winds of Winter'.
-	sentenceFinder add: 'Winter is here'.
-	
-	result := OrderedCollection new.
-	
-	self assert: (sentenceFinder find: 'every') = result.! !
+	self assert: (sentenceFinder find: 'every') isEmpty! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:51:28'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:31:59'!
 test04SiNoSeEncuentraElPrefijoFindDevuelveUnaCollectionVacia
 
-	| sentenceFinder result|
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'winning is everything'.
-	sentenceFinder add: 'The winds of Winter'.
-	sentenceFinder add: 'Winter is here'.
-	
-	result := OrderedCollection new.
-	
-	self assert: (sentenceFinder find: 'dog') = result.! !
+	self assert: (sentenceFinder find: 'dog') isEmpty.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 11:54:37'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:31:51'!
 test05FindEsCaseSensitive
 
-	| sentenceFinder upperCaseResult lowerCaseResult|
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'winning is everything'.
-	sentenceFinder add: 'The winds of Winter'.
-	sentenceFinder add: 'Winter is here'.
-	
+	| upperCaseResult lowerCaseResult|
+
 	upperCaseResult := OrderedCollection
-		with:'Winter is here'.
+		with: 'Winter is here'.
 	lowerCaseResult := OrderedCollection
-		with:'winning is everything'.
-		
+		with: 'win every day'
+		with: 'winning is everything'.
+
 	self assert: (sentenceFinder find: 'win') = lowerCaseResult .
 	self assert: (sentenceFinder find: 'Win') = upperCaseResult .! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:12:13'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:30:06'!
 test06FindNoCambiaLosElementosDeLaPila
 
-	| sentenceFinder result pila lista elem |
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'winning is everything'.
-	sentenceFinder add: 'The winds of Winter'.
-	sentenceFinder add: 'winter is here'.
-	
-	result := OrderedCollection
-		with: 'winter is here'
-		with: 'The winds of Winter'
-		with: 'winning is everything'.
-		
-	sentenceFinder find: 'win'.
-	
-	pila := OOStack new.
-	lista := OrderedCollection new.
-	
-	sentenceFinder size timesRepeat: [
-		elem := sentenceFinder pop.
-		pila push: elem.
-		lista add: elem.
-		].
-	
-	pila size timesRepeat: [
-		elem := pila pop.
-		sentenceFinder add: elem.
-		].
-	
-	self assert: lista = result.
-	
-	! !
+	| beforeFindResult afterFindResult |
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:29:14'!
+	beforeFindResult := sentenceFinder asOrderedCollection.
+	sentenceFinder find: 'win'.
+	afterFindResult := sentenceFinder asOrderedCollection.
+	
+	self assert: beforeFindResult = afterFindResult.! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 15:31:33'!
 test07SiLaOracionEsParteDelPrefijoNoLaAgrega
 
-	| sentenceFinder result|
-	
-	sentenceFinder := SentenceFinderByPrefix new.
-	sentenceFinder add: 'The winds'.
-	
-	result := OrderedCollection new.
-	
-	self assert: (sentenceFinder find: 'The winds of') = result.! !
+	self assert: (sentenceFinder find: 'worked') isEmpty.! !
 
-!SentenceFinderByPrefixTest methodsFor: 'as yet unclassified' stamp: 'am 5/14/2022 12:17:04'!
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/15/2022 21:17:48'!
 test08SiNoHayOracionesFindNoEncuentraNada
 
-	| sentenceFinder result|
+	| aSentenceFinder |
 	
-	sentenceFinder := SentenceFinderByPrefix new.
+	aSentenceFinder := SentenceFinderByPrefix new.
 	
-	result := OrderedCollection new.
+	self assert: (aSentenceFinder find: 'win') isEmpty! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 17:03:04'!
+test09ElPrefijoNoPuedeContenerEspacios
 	
-	self assert: (sentenceFinder find: 'win') = result.! !
+	self assertFindFallaConElPrefijo: 'The '! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 16:50:26'!
+test10ElPrefijoNoPuedeSerVacio
+	
+	self assertFindFallaConElPrefijo: ''! !
+
+!SentenceFinderByPrefixTest methodsFor: 'test' stamp: 'e 5/16/2022 16:50:43'!
+test11ElPrefijoTieneQueSerUnString
+	
+	self assertFindFallaConElPrefijo: 1! !
 
 
 !classDefinition: #OOStack category: 'Stack-Exercise'!
@@ -360,44 +345,32 @@ initialize
 	stack := OrderedCollection new.! !
 
 
-!OOStack methodsFor: 'removing' stamp: 'e 5/13/2022 20:21:13'!
+!OOStack methodsFor: 'removing' stamp: 'e 5/16/2022 17:04:38'!
 pop
 	
-	"self isEmpty ifTrue: [ self error: 'Stack is empty'].
-	
-	^stack removeLast.
-	"
 	^self state pop: stack
 	! !
 
 
-!OOStack methodsFor: 'adding' stamp: 'e 5/13/2022 20:12:26'!
+!OOStack methodsFor: 'adding' stamp: 'e 5/16/2022 17:05:07'!
 push: unElemento
 
-	stack add: unElemento.
-	
-	"self state push: unElemento"! !
+	stack add: unElemento.! !
 
 
-!OOStack methodsFor: 'accessing' stamp: 'e 5/13/2022 20:12:47'!
+!OOStack methodsFor: 'accessing' stamp: 'e 5/16/2022 17:04:57'!
 isEmpty
 
-	^stack size = 0.
-	
-	"^self state isEmpty"! !
+	^stack size = 0.! !
 
 !OOStack methodsFor: 'accessing' stamp: 'e 5/11/2022 16:11:51'!
 size
 
 	^stack size! !
 
-!OOStack methodsFor: 'accessing' stamp: 'e 5/13/2022 20:43:16'!
+!OOStack methodsFor: 'accessing' stamp: 'e 5/16/2022 17:04:47'!
 top
 
-	"self isEmpty ifTrue: [ self error: 'Stack is empty'].
-	
-	^stack last
-	"
 	^self state top: stack! !
 
 
