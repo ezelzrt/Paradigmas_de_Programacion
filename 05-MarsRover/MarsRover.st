@@ -5,52 +5,83 @@ TestCase subclass: #MarsRoverTest
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:46:45'!
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 09:23:22'!
 test01UnRoverEmpiezaEnUnPuntoInicial
 
 	| marsRover |
 	marsRover _ MarsRover new.
 	self assert: marsRover position equals: 0@0.! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:48:10'!
-test02UnRoverEmpiezaApuntandoAUnPuntoCardinal
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:03:17'!
+test02UnRoverEmpiezaConUnaOrientacionInicial
 
-	| marsRover norte |
+	| marsRover |
 	marsRover _ MarsRover new.
-	norte _ Norte new.
-	self assert: marsRover orientation = norte.! !
+	self assert: marsRover haveNorthOrientation! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'am 5/29/2022 10:13:37'!
-test03AlMoverseDejaDeEstarEnELPuntoInicial
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:21:57'!
+test03AlRecibirElComandoFAvanza
 
 	| marsRover |
 	marsRover _ MarsRover new.
 	marsRover command: 'f'.
-	self deny: (marsRover position = (0@0)) ! !
+	self assert: marsRover position = (0@1)! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:32:33'!
-test04AlRotarCambiaElPuntoCardinalAlQueApunta
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:21:40'!
+test04AlRecibirElComandoBRetrocede
 
 	| marsRover |
 	marsRover _ MarsRover new.
-	marsRover command: 'l'.
-	self deny: (marsRover orientation = Norte new)! !
+	marsRover command: 'b'.
+	self assert: marsRover position = (0@-1)! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:31:49'!
-test05RotaHaciaElLadoCorrecto
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:21:17'!
+test05AlRecibirElComandoRRotaHaciaLaDerecha
 
 	| marsRover |
 	marsRover _ MarsRover new.
 	marsRover command: 'r'.
-	self assert: (marsRover orientation = Este new).! !
+	self assert: marsRover haveEastOrientation! !
 
-!MarsRoverTest methodsFor: 'as yet unclassified' stamp: 'am 5/29/2022 10:58:40'!
-test06EjecutaCorrectamenteVariosComandos
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:20:56'!
+test06AlRecibirElComandoLRotaHaciaLaIzquierda
+
+	| marsRover |
+	marsRover _ MarsRover new.
+	marsRover command: 'l'.
+	self assert: marsRover haveWestOrientation ! !
+
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:20:24'!
+test07AlRecibirUnaCadenaDeComandosValidosSeEjecutanCorrectamente
 
 	| marsRover |
 	marsRover _ MarsRover new.
 	marsRover command: 'fflb'.
 	self assert: (marsRover position = (1@2)).! !
+
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:25:04'!
+test08AlRecibirUnComandoInvalidoFalla
+
+	| marsRover |
+	marsRover _ MarsRover new.
+	
+	self 
+		should: [ marsRover command: 'x' ]
+		raise: Error
+		withExceptionDo: [ :anException |
+			 self assert: anException messageText = MarsRover invalidCommandErrorDescription]! !
+
+!MarsRoverTest methodsFor: 'test' stamp: 'e 6/2/2022 11:23:41'!
+test09AlRecibirUnaCadenaDeComandosConUnoInvalidoNoSigueProcesandoLosRestantes
+
+	| marsRover |
+	marsRover _ MarsRover new.
+	
+	self 
+		should: [ marsRover command: 'ffxlf' ]
+		raise: Error.
+		
+	self assert: marsRover position = (0@2)! !
 
 
 !classDefinition: #MarsRover category: 'MarsRover'!
@@ -60,12 +91,16 @@ Object subclass: #MarsRover
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 11:42:17'!
+!MarsRover methodsFor: 'movement' stamp: 'e 6/2/2022 10:10:25'!
 command: commands
 
-	| listOfCommands |
+	| listOfCommands validCommands |
 	listOfCommands _ commands asOrderedCollection.
+	validCommands _ Set  new.
+	validCommands add: $f; add: $b; add: $r; add: $l.
+	
 	listOfCommands do: [ :command |
+		 (validCommands includes: command) ifFalse: [ self error: self class invalidCommandErrorDescription ].
 		 command = $f ifTrue:[ self moveForward ].
 		 command = $b ifTrue:[			self moveBackwards			].
 		 command = $r ifTrue:[			self rotate90DegreesToTheRight ].
@@ -73,156 +108,237 @@ command: commands
 		].
 	! !
 
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 11:58:27'!
-initialize
-
-	position _ 0@0.
-	orientation _ Norte new.! !
-
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:44:23'!
+!MarsRover methodsFor: 'movement' stamp: 'e 5/29/2022 12:44:23'!
 moveBackwards
 
 	position _ position - (orientation direction)! !
 
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:44:28'!
+!MarsRover methodsFor: 'movement' stamp: 'e 5/29/2022 12:44:28'!
 moveForward
 
 	position _ orientation direction + position ! !
 
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:20:39'!
-orientation
-	^ orientation.! !
-
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'am 5/29/2022 10:08:00'!
-position
-	^ position.! !
-
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:44:45'!
+!MarsRover methodsFor: 'movement' stamp: 'e 5/29/2022 12:44:45'!
 rotate90DegreesToTheLeft
 
 	orientation _ orientation rotate90DegreesToTheLeft! !
 
-!MarsRover methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:44:49'!
+!MarsRover methodsFor: 'movement' stamp: 'e 5/29/2022 12:44:49'!
 rotate90DegreesToTheRight
 
 	orientation _ orientation rotate90DegreesToTheRight ! !
 
+
+!MarsRover methodsFor: 'accessing' stamp: 'am 5/29/2022 10:08:00'!
+position
+	^ position.! !
+
+
+!MarsRover methodsFor: 'testing' stamp: 'e 6/2/2022 10:56:00'!
+haveEastOrientation
+	
+	^orientation isEast ! !
+
+!MarsRover methodsFor: 'testing' stamp: 'e 6/2/2022 10:55:25'!
+haveNorthOrientation
+	
+	^orientation isNorth! !
+
+!MarsRover methodsFor: 'testing' stamp: 'e 6/2/2022 10:55:38'!
+haveSouthOrientation
+	
+	^orientation isSouth! !
+
+!MarsRover methodsFor: 'testing' stamp: 'e 6/2/2022 10:54:04'!
+haveWestOrientation
+	
+	^orientation isWest! !
+
+
+!MarsRover methodsFor: 'initialization' stamp: 'e 6/2/2022 10:44:41'!
+initialize
+
+	position _ 0@0.
+	orientation _ MarsRoverNorthOrientation new.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MarsRover class' category: 'MarsRover'!
+MarsRover class
+	instanceVariableNames: ''!
+
+!MarsRover class methodsFor: 'as yet unclassified' stamp: 'e 6/2/2022 10:09:49'!
+invalidCommandErrorDescription
+
+	^'invalid command'! !
+
 
-!classDefinition: #PuntoCardinal category: 'MarsRover'!
-Object subclass: #PuntoCardinal
+!classDefinition: #MarsRoverOrientation category: 'MarsRover'!
+Object subclass: #MarsRoverOrientation
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!PuntoCardinal methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:30:19'!
+!MarsRoverOrientation methodsFor: 'comparing' stamp: 'e 5/29/2022 12:30:19'!
 = unPuntoCardinal
 
 	^ self class = unPuntoCardinal class! !
 
-!PuntoCardinal methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:42:34'!
+
+!MarsRoverOrientation methodsFor: 'accessing' stamp: 'e 5/29/2022 12:42:34'!
 direction
 
 	self subclassResponsibility ! !
 
-!PuntoCardinal methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:15:41'!
+
+!MarsRoverOrientation methodsFor: 'rotate' stamp: 'e 5/29/2022 12:15:41'!
 rotate90DegreesToTheLeft
 
 	self subclassResponsibility ! !
 
-!PuntoCardinal methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:15:35'!
+!MarsRoverOrientation methodsFor: 'rotate' stamp: 'e 5/29/2022 12:15:35'!
 rotate90DegreesToTheRight
 
 	self subclassResponsibility ! !
 
+
+!MarsRoverOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:46:30'!
+IsEast
+
+	^false! !
+
+!MarsRoverOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:44:03'!
+IsNorth
+
+	^false! !
+
+!MarsRoverOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:46:19'!
+IsSouth
+
+	^false! !
+
+!MarsRoverOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:46:25'!
+IsWest
+
+	^false! !
+
 
-!classDefinition: #Este category: 'MarsRover'!
-PuntoCardinal subclass: #Este
+!classDefinition: #MarsRoverEastOrientation category: 'MarsRover'!
+MarsRoverOrientation subclass: #MarsRoverEastOrientation
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!Este methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:39:55'!
+!MarsRoverEastOrientation methodsFor: 'accessing' stamp: 'e 6/2/2022 09:44:34'!
 direction
 
 	^(1@0)! !
 
-!Este methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:00:38'!
+
+!MarsRoverEastOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:44:41'!
 rotate90DegreesToTheLeft
 
-	^ Norte new! !
+	^ MarsRoverNorthOrientation new! !
 
-!Este methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:04:13'!
+!MarsRoverEastOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:45:36'!
 rotate90DegreesToTheRight
 
-	^ Sur new! !
+	^ MarsRoverSouthOrientation new! !
+
+
+!MarsRoverEastOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:46:52'!
+isEast
+
+	^true! !
 
 
-!classDefinition: #Norte category: 'MarsRover'!
-PuntoCardinal subclass: #Norte
+!classDefinition: #MarsRoverNorthOrientation category: 'MarsRover'!
+MarsRoverOrientation subclass: #MarsRoverNorthOrientation
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!Norte methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:40:42'!
+!MarsRoverNorthOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:47:08'!
+isNorth
+
+	^true! !
+
+
+!MarsRoverNorthOrientation methodsFor: 'accessing' stamp: 'e 5/29/2022 12:40:42'!
 direction
 
 	^(0@1)! !
 
-!Norte methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:00:11'!
+
+!MarsRoverNorthOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:45:15'!
 rotate90DegreesToTheLeft
 	
-	^ Oeste new.! !
+	^ MarsRoverWestOrientation new.! !
 
-!Norte methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:03:53'!
+!MarsRoverNorthOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:44:19'!
 rotate90DegreesToTheRight
 	
-	^ Este new.! !
+	^ MarsRoverEastOrientation new.! !
 
 
-!classDefinition: #Oeste category: 'MarsRover'!
-PuntoCardinal subclass: #Oeste
+!classDefinition: #MarsRoverSouthOrientation category: 'MarsRover'!
+MarsRoverOrientation subclass: #MarsRoverSouthOrientation
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'MarsRover'!
 
-!Oeste methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:40:50'!
-direction
-
-	^(-1@0)! !
-
-!Oeste methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:00:55'!
-rotate90DegreesToTheLeft
-
-	^ Sur new! !
-
-!Oeste methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:04:32'!
-rotate90DegreesToTheRight
-
-	^ Norte new! !
-
-
-!classDefinition: #Sur category: 'MarsRover'!
-PuntoCardinal subclass: #Sur
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'MarsRover'!
-
-!Sur methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:41:08'!
+!MarsRoverSouthOrientation methodsFor: 'accessing' stamp: 'e 5/29/2022 12:41:08'!
 direction
 
 	^(0@-1)! !
 
-!Sur methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:01:07'!
+
+!MarsRoverSouthOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:47:28'!
+isSouth
+
+	^true! !
+
+
+!MarsRoverSouthOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:44:19'!
 rotate90DegreesToTheLeft
 
-	^ Este new! !
+	^ MarsRoverEastOrientation new! !
 
-!Sur methodsFor: 'as yet unclassified' stamp: 'e 5/29/2022 12:04:46'!
+!MarsRoverSouthOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:45:15'!
 rotate90DegreesToTheRight
 
-	^ Oeste new! !
+	^ MarsRoverWestOrientation new! !
+
+
+!classDefinition: #MarsRoverWestOrientation category: 'MarsRover'!
+MarsRoverOrientation subclass: #MarsRoverWestOrientation
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MarsRover'!
+
+!MarsRoverWestOrientation methodsFor: 'testing' stamp: 'e 6/2/2022 10:47:40'!
+isWest
+
+	^true! !
+
+
+!MarsRoverWestOrientation methodsFor: 'accessing' stamp: 'e 5/29/2022 12:40:50'!
+direction
+
+	^(-1@0)! !
+
+
+!MarsRoverWestOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:45:36'!
+rotate90DegreesToTheLeft
+
+	^ MarsRoverSouthOrientation new! !
+
+!MarsRoverWestOrientation methodsFor: 'rotate' stamp: 'e 6/2/2022 10:44:41'!
+rotate90DegreesToTheRight
+
+	^ MarsRoverNorthOrientation new! !
