@@ -190,19 +190,62 @@ test07AccountKnowsItsTransactions
 	self assert: (account transactions includes: deposit).
 ! !
 
-!ReceptiveAccountTest methodsFor: 'tests' stamp: 'am 6/6/2022 20:15:52'!
-test08TransferenceTerminar
+
+!classDefinition: #TransferenceTest category: 'ServiciosFinancieros-Ejercicio'!
+TestCase subclass: #TransferenceTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!TransferenceTest methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 15:54:41'!
+test01TransferenceTerminar
 
 	| account accountTwo |
 	
 	account := ReceptiveAccount new.
 	accountTwo:= ReceptiveAccount new.
-	
-	Deposit register: 100 * peso on: account.
-	Transference register: 100 * peso from: account to: accountTwo.
+
+	Transference from: account to: accountTwo for: 100 * peso.
 		
-	self assert: 0 * peso equals: account balance.
-	self assert: 100 * peso equals: accountTwo balance.! !
+	self assert: -100 * peso equals: account balance.
+	self assert: 100 * peso equals: accountTwo balance! !
+
+!TransferenceTest methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 15:55:02'!
+test02
+
+	| account accountTwo transference |
+	
+	account := ReceptiveAccount new.
+	accountTwo:= ReceptiveAccount new.
+
+	transference := Transference from: account to: accountTwo for: 100 * peso.
+		
+	self assert: transference value equals: 100 * peso! !
+
+!TransferenceTest methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:05:19'!
+test03
+
+	| account accountTwo transference |
+	
+	account := ReceptiveAccount new.
+	accountTwo:= ReceptiveAccount new.
+
+	transference := Transference from: account to: accountTwo for: 100 * peso.
+
+	self assert: (transference pataDeDeposito) contraparte equals: transference pataDeExtraccion! !
+
+!TransferenceTest methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:51:49'!
+test04
+
+	| account accountTwo transference |
+	
+	account := ReceptiveAccount new.
+	accountTwo:= ReceptiveAccount new.
+
+	transference := Transference from: account to: accountTwo for: 100 * peso.
+
+	self assert: (transference pataDeExtraccion) contraparte equals: transference pataDeDeposito ! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Ejercicio'!
@@ -217,21 +260,11 @@ value
 
 	self subclassResponsibility ! !
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'AccountTransaction class' category: 'ServiciosFinancieros-Ejercicio'!
-AccountTransaction class
-	instanceVariableNames: ''!
+!AccountTransaction methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:50:43'!
+after: otroSaldo
 
-!AccountTransaction class methodsFor: 'instance creation' stamp: 'NR 10/17/2019 03:22:00'!
-register: aValue on: account
-
-	| transaction |
-	
-	transaction := self for: aValue.
-	account register: transaction.
-		
-	^ transaction! !
+	self subclassResponsibility ! !
 
 
 !classDefinition: #Deposit category: 'ServiciosFinancieros-Ejercicio'!
@@ -268,63 +301,30 @@ for: aValue
 
 	^ self new initializeFor: aValue ! !
 
-
-!classDefinition: #Transference category: 'ServiciosFinancieros-Ejercicio'!
-AccountTransaction subclass: #Transference
-	instanceVariableNames: 'value extraccion deposito'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ServiciosFinancieros-Ejercicio'!
+!Deposit class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:49:30'!
+register: aValue on: account
 
-!Transference methodsFor: 'initialization' stamp: 'am 6/6/2022 16:30:10'!
-initializeFor: aValue extraccion: withdraw deposito: deposit
-
-	value := aValue.
-	extraccion := withdraw.
-	deposito := deposit.
-	deposit contrapart: withdraw.
-	withdraw contrapart: deposit.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Transference class' category: 'ServiciosFinancieros-Ejercicio'!
-Transference class
-	instanceVariableNames: ''!
-
-!Transference class methodsFor: 'instance creation' stamp: 'am 6/6/2022 16:26:09'!
-register: aValue from: cuentaDeExtraccion to: cuentaDeDeposito
-
-	|transference withdraw deposit|	
+	| transaction |
 	
-	withdraw := TransferenceWithdraw register: aValue on: cuentaDeExtraccion .
-	deposit := TransferenceDeposit  register: aValue on: cuentaDeDeposito .
-	transference := self new initializeFor: aValue extraccion: withdraw deposito: deposit.
-	
-	^ transference.! !
+	transaction := self for: aValue.
+	account register: transaction.
+		
+	^ transaction! !
 
 
 !classDefinition: #TransferenceDeposit category: 'ServiciosFinancieros-Ejercicio'!
-Transference subclass: #TransferenceDeposit
-	instanceVariableNames: 'contrapart'
+AccountTransaction subclass: #TransferenceDeposit
+	instanceVariableNames: 'tranference value'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
-!TransferenceDeposit methodsFor: 'initialization' stamp: 'am 6/6/2022 16:23:10'!
-initializeFor: aValue
-
-	value := aValue ! !
-
-
-!TransferenceDeposit methodsFor: 'value' stamp: 'am 6/6/2022 16:23:10'!
-after: otroSaldo
+!TransferenceDeposit methodsFor: 'initialization' stamp: 'e 6/7/2022 16:22:31'!
+initializeIn: aTranference for: aValue 
 	
-	^ self value + otroSaldo.! !
+	tranference := aTranference.
+	value := aValue.! !
 
-!TransferenceDeposit methodsFor: 'value' stamp: 'am 6/6/2022 16:31:01'!
-contrapart: aContrapart
-
-	contrapart := aContrapart ! !
 
 !TransferenceDeposit methodsFor: 'value' stamp: 'am 6/6/2022 16:23:10'!
 value
@@ -332,10 +332,14 @@ value
 	^ value! !
 
 
-!TransferenceDeposit methodsFor: 'as yet unclassified' stamp: 'am 6/6/2022 19:41:40'!
-contrapart
+!TransferenceDeposit methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:25:24'!
+after: otroSaldo
 
-	^contrapart ! !
+	^ self value + otroSaldo! !
+
+!TransferenceDeposit methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:29:08'!
+contraparte
+	^tranference pataDeExtraccion! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -343,23 +347,34 @@ contrapart
 TransferenceDeposit class
 	instanceVariableNames: ''!
 
-!TransferenceDeposit class methodsFor: 'instance creation' stamp: 'am 6/6/2022 16:23:10'!
-for: aValue
+!TransferenceDeposit class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:22:44'!
+in: aTranference for: aValue 
 
-	^ self new initializeFor: aValue ! !
+	^self new initializeIn: aTranference for: aValue ! !
+
+!TransferenceDeposit class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:19:32'!
+in: aTranference register: aValue on: anAccount 
+	
+	| transferenceDeposit |
+	
+	transferenceDeposit := self in: aTranference for: aValue.
+	anAccount register: transferenceDeposit.
+		
+	^ transferenceDeposit! !
 
 
 !classDefinition: #TransferenceWithdraw category: 'ServiciosFinancieros-Ejercicio'!
-Transference subclass: #TransferenceWithdraw
-	instanceVariableNames: 'contrapart'
+AccountTransaction subclass: #TransferenceWithdraw
+	instanceVariableNames: 'tranference value'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Ejercicio'!
 
-!TransferenceWithdraw methodsFor: 'initialization' stamp: 'am 6/6/2022 16:24:09'!
-initializeFor: aValue
-
-	value := aValue ! !
+!TransferenceWithdraw methodsFor: 'initialization' stamp: 'e 6/7/2022 16:22:02'!
+initializeIn: aTranference for: aValue 
+	
+	tranference := aTranference.
+	value := aValue.! !
 
 
 !TransferenceWithdraw methodsFor: 'value' stamp: 'am 6/6/2022 16:24:09'!
@@ -367,15 +382,9 @@ after: otroSaldo
 
 	^ otroSaldo - self value.! !
 
-!TransferenceWithdraw methodsFor: 'value' stamp: 'am 6/6/2022 16:25:15'!
-contrapart
-
-	^contrapart ! !
-
-!TransferenceWithdraw methodsFor: 'value' stamp: 'am 6/6/2022 16:31:38'!
-contrapart: aContrapart
-
-	contrapart := aContrapart ! !
+!TransferenceWithdraw methodsFor: 'value' stamp: 'e 6/7/2022 16:48:13'!
+contraparte
+	^tranference pataDeDeposito! !
 
 !TransferenceWithdraw methodsFor: 'value' stamp: 'am 6/6/2022 16:24:09'!
 value
@@ -388,10 +397,20 @@ value
 TransferenceWithdraw class
 	instanceVariableNames: ''!
 
-!TransferenceWithdraw class methodsFor: 'instance creation' stamp: 'am 6/6/2022 16:24:09'!
-for: aValue
+!TransferenceWithdraw class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:21:52'!
+in: aTranference for: aValue 
 
-	^ self new initializeFor: aValue ! !
+	^self new initializeIn: aTranference for: aValue ! !
+
+!TransferenceWithdraw class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:20:49'!
+in: aTranference register: aValue on: anAccount 
+
+	| transferenceWithdraw |
+	
+	transferenceWithdraw := self in: aTranference for: aValue.
+	anAccount register: transferenceWithdraw.
+		
+	^ transferenceWithdraw! !
 
 
 !classDefinition: #Withdraw category: 'ServiciosFinancieros-Ejercicio'!
@@ -427,6 +446,16 @@ Withdraw class
 for: aValue
 
 	^ self new initializeFor: aValue ! !
+
+!Withdraw class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:49:55'!
+register: aValue on: account
+
+	| transaction |
+	
+	transaction := self for: aValue.
+	account register: transaction.
+		
+	^ transaction! !
 
 
 !classDefinition: #Portfolio category: 'ServiciosFinancieros-Ejercicio'!
@@ -508,3 +537,56 @@ register: aTransaction
 transactions 
 
 	^ transactions copy! !
+
+
+!classDefinition: #Transference category: 'ServiciosFinancieros-Ejercicio'!
+Object subclass: #Transference
+	instanceVariableNames: 'value extraccion deposito'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Ejercicio'!
+
+!Transference methodsFor: 'initialization' stamp: 'e 6/7/2022 16:44:15'!
+initializeFor: aValue 
+	
+	value := aValue.! !
+
+
+!Transference methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:43:36'!
+extraccion: aTransferenceWithdraw YDeposito: aTransferenceDeposit
+
+	extraccion := aTransferenceWithdraw.
+	deposito  := aTransferenceDeposit ! !
+
+!Transference methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:05:48'!
+pataDeDeposito
+	
+	^deposito! !
+
+!Transference methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 16:44:34'!
+pataDeExtraccion
+	^extraccion ! !
+
+!Transference methodsFor: 'as yet unclassified' stamp: 'e 6/7/2022 15:50:09'!
+value
+
+	^value ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transference class' category: 'ServiciosFinancieros-Ejercicio'!
+Transference class
+	instanceVariableNames: ''!
+
+!Transference class methodsFor: 'instance creation' stamp: 'e 6/7/2022 16:43:45'!
+from: cuentaDeExtraccion to: cuentaDeDeposito for: aValue
+
+	|withdraw deposit transference |	
+	
+	transference := self new initializeFor: aValue.
+	withdraw := TransferenceWithdraw in: transference register: aValue on: cuentaDeExtraccion.
+	deposit := TransferenceDeposit in: transference register: aValue on: cuentaDeDeposito.
+	transference extraccion: withdraw YDeposito: deposit.
+	
+	^transference! !
+
