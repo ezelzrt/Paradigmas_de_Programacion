@@ -309,7 +309,7 @@ TestCase subclass: #ReportTest
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:41:00'!
+!ReportTest methodsFor: 'test' stamp: 'am 6/9/2022 21:41:00'!
 test01
 
 	| account |
@@ -317,27 +317,125 @@ test01
 	
 	self assert: account AccountSummary size = 1.! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:44:04'!
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 17:51:33'!
 test02
 
 	| account |
 	account := ReceptiveAccount new.
 	
 	self assert: account AccountSummary size = 1.
-	self assert: account AccountSummary first = 'Balance = 0 pesos'! !
+	self assert: account AccountSummary first = 'Balance = 0 * pesos'! !
 
-!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:50:17'!
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:35'!
 test03
 
-	| account resultadoEsperado |
+	| account expectedResult |
 	account := ReceptiveAccount new.
 	
 	Deposit register: 10 * peso on: account.
 	
-	resultadoEsperado := OrderedCollection with: 'Depósito por 10 pesos' with: 'Balance = 10 pesos'.
+	expectedResult := OrderedCollection with: 'Depósito por 10 * pesos' with: 'Balance = 10 * pesos'.
 	
 	self assert: account AccountSummary size = 2.
-	self assert: account AccountSummary = resultadoEsperado ! !
+	self assert: account AccountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:21'!
+test04
+
+	| account expectedResult otherAccount |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Balance = 60 * pesos'.
+	
+	self assert: account AccountSummary size = 5.
+	self assert: account AccountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:12'!
+test05
+
+	| account expectedResult otherAccount portfolio |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	portfolio := Portfolio with: account.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Balance = 60 * pesos'.
+	
+	self assert: portfolio AccountSummary size = 5.
+	self assert: portfolio AccountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:05'!
+test06
+
+	| account expectedResult otherAccount portfolio |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	portfolio := Portfolio with: account with: otherAccount .
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Entrada por transferencia de 20 * pesos'
+						with: 'Salida por transferencia de 30 * pesos'.
+	expectedResult add: 'Balance = 50 * pesos'.
+	
+	self assert: portfolio AccountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:54:59'!
+test07
+
+	| account expectedResult otherAccount portfolio otherPortfolio |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	otherPortfolio := Portfolio with: otherAccount. 
+	
+	portfolio := Portfolio with: account with: otherPortfolio.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Entrada por transferencia de 20 * pesos'
+						with: 'Salida por transferencia de 30 * pesos'.
+	expectedResult add: 'Balance = 50 * pesos'.
+	
+	self assert: portfolio AccountSummary = expectedResult ! !
 
 
 !classDefinition: #TransferTest category: 'ServiciosFinancieros-Solucion'!
@@ -593,6 +691,27 @@ signalCanNotAddAccount
 	
 	self error: self class canNotAddAccountErrorMessage! !
 
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:57:33'!
+AccountSummary
+	
+	| accountsSummary aBalance|
+	
+	accountsSummary := self summary.
+	aBalance := self balance asString .
+	accountsSummary add: 'Balance = ', aBalance.
+	^accountsSummary ! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:43:01'!
+summary
+	
+	| accountsSummary |
+	
+	accountsSummary := OrderedCollection new.
+	accounts do: [ :anAccount | accountsSummary addAll: anAccount summary].
+	
+	^accountsSummary ! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: 'ServiciosFinancieros-Solucion'!
@@ -634,11 +753,11 @@ initialize
 	transactions := OrderedCollection new.! !
 
 
-!ReceptiveAccount methodsFor: 'main protocol' stamp: 'HAW 5/25/2019 11:24:46'!
+!ReceptiveAccount methodsFor: 'main protocol' stamp: 'e 6/10/2022 17:49:34'!
 balance
 
 	^transactions 
-		inject: 0
+		inject: 0 * peso
 		into: [ :currentBalance :transaction | transaction affectBalance: currentBalance ]! !
 
 !ReceptiveAccount methodsFor: 'main protocol' stamp: 'NR 10/21/2019 18:55:56'!
@@ -676,9 +795,26 @@ isComposedBy: anAccount
 	^self = anAccount ! !
 
 
-!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:55:21'!
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:57:18'!
 AccountSummary
-	^ OrderedCollection with: 'Depósito por 10 pesos' with: 'Balance = 10 pesos'.! !
+	
+	| accountSummary aBalance |
+	
+	accountSummary := self summary.
+	
+	aBalance := self balance asString.
+	accountSummary add: 'Balance = ', aBalance.
+	^accountSummary 
+! !
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:37:32'!
+summary
+
+	| accountSummary |
+	
+	accountSummary := OrderedCollection new.
+	transactions do: [ :aTransaction | accountSummary add: aTransaction report].
+	^accountSummary! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Solucion'!
@@ -723,6 +859,12 @@ value
 affectBalance: aBalance
 
 	^aBalance + value ! !
+
+
+!Deposit methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 17:41:45'!
+report
+
+	^'Depósito por ', (self value asString)! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -800,6 +942,12 @@ affectBalance: aBalance
 
 	^aBalance + self value! !
 
+
+!TransferDepositLeg methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:07:34'!
+report
+	
+	^'Entrada por transferencia de ', (self value asString)! !
+
 
 !classDefinition: #TransferWithdrawLeg category: 'ServiciosFinancieros-Solucion'!
 TransferLeg subclass: #TransferWithdrawLeg
@@ -818,6 +966,12 @@ depositLeg
 affectBalance: aBalance
 
 	^aBalance - self value! !
+
+
+!TransferWithdrawLeg methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:06:28'!
+report
+	
+	^'Salida por transferencia de ', (self value asString)! !
 
 
 !classDefinition: #Withdraw category: 'ServiciosFinancieros-Solucion'!
@@ -843,6 +997,12 @@ value
 affectBalance: aBalance
 
 	^aBalance - value! !
+
+
+!Withdraw methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:10:14'!
+report
+	
+	^'Extracción por ', (self value asString)! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
