@@ -302,6 +302,44 @@ test07AccountKnowsItsTransactions
 ! !
 
 
+!classDefinition: #ReportTest category: 'ServiciosFinancieros-Solucion'!
+TestCase subclass: #ReportTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Solucion'!
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:41:00'!
+test01
+
+	| account |
+	account := ReceptiveAccount new.
+	
+	self assert: account AccountSummary size = 1.! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:44:04'!
+test02
+
+	| account |
+	account := ReceptiveAccount new.
+	
+	self assert: account AccountSummary size = 1.
+	self assert: account AccountSummary first = 'Balance = 0 pesos'! !
+
+!ReportTest methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:50:17'!
+test03
+
+	| account resultadoEsperado |
+	account := ReceptiveAccount new.
+	
+	Deposit register: 10 * peso on: account.
+	
+	resultadoEsperado := OrderedCollection with: 'Depósito por 10 pesos' with: 'Balance = 10 pesos'.
+	
+	self assert: account AccountSummary size = 2.
+	self assert: account AccountSummary = resultadoEsperado ! !
+
+
 !classDefinition: #TransferTest category: 'ServiciosFinancieros-Solucion'!
 TestCase subclass: #TransferTest
 	instanceVariableNames: ''
@@ -636,6 +674,11 @@ addedTo: aPortfolio
 isComposedBy: anAccount
 
 	^self = anAccount ! !
+
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'am 6/9/2022 21:55:21'!
+AccountSummary
+	^ OrderedCollection with: 'Depósito por 10 pesos' with: 'Balance = 10 pesos'.! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Solucion'!
