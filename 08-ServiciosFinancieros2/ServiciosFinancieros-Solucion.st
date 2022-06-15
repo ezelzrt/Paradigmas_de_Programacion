@@ -309,38 +309,144 @@ TestCase subclass: #ReportTest
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!ReportTest methodsFor: 'test' stamp: 'am 6/9/2022 21:41:00'!
-test01
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 17:59:39'!
+test10CuentaSinTransaccionesRespondeSuNetoDeTransferencias
+
+	self assert: ReceptiveAccount new transferNet equals: (0 * peso)! !
+
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 18:00:43'!
+test11CuentaConEntradaPorTransferenciaRespondeSuNetoDeTransferencias
+
+	| account otherAccount |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: otherAccount to: account .
+	
+	self assert: account transferNet = (20 * peso) 
+! !
+
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 18:02:17'!
+test12CuentaConSalidaPorTransferenciaRespondeSuNetoDeTransferencias
+
+	| account otherAccount |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount .
+	
+	self assert: account transferNet = (-20 * peso) ! !
+
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 18:05:30'!
+test13CuentaSinTransferenciasRespondeSuNetoDeTransferencias
+
+	| account |
+	
+	account := ReceptiveAccount new.
+	
+	Deposit register: 10 * peso on: account.
+	Withdraw register: 10 * peso on: account .
+	
+	self assert: account transferNet = (0 * peso) ! !
+
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 18:14:12'!
+test14CuentaConVariasTransaccionesRespondeSuNetoPorTransferencias
+
+	| account otherAccount |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+
+	
+	self assert: account transferNet equals: (10 * peso)! !
+
+!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/15/2022 18:13:23'!
+test15PorfolioConUnaCuentaRespondeSuNetoPorTransferencia
+
+	| account otherAccount portfolio |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	portfolio := Portfolio with: account.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	
+	
+	self assert: portfolio transferNet equals: (10 * peso) ! !
+
+
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test01CuentaSinTransaccionesRespondeSuResumen
 
 	| account |
 	account := ReceptiveAccount new.
 	
-	self assert: account AccountSummary size = 1.! !
+	self assert: account accountSummary size = 1.
+	self assert: account accountSummary first = 'Balance = 0 * pesos'! !
 
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 17:51:33'!
-test02
-
-	| account |
-	account := ReceptiveAccount new.
-	
-	self assert: account AccountSummary size = 1.
-	self assert: account AccountSummary first = 'Balance = 0 * pesos'! !
-
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:35'!
-test03
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test02CuentaConUnDepositoRespondeSuResumen
 
 	| account expectedResult |
 	account := ReceptiveAccount new.
 	
-	Deposit register: 10 * peso on: account.
+	Deposit register: 100 * peso on: account.
 	
-	expectedResult := OrderedCollection with: 'Depósito por 10 * pesos' with: 'Balance = 10 * pesos'.
+	expectedResult := OrderedCollection with: 'Depósito por 100 * pesos' with: 'Balance = 100 * pesos'.
 	
-	self assert: account AccountSummary size = 2.
-	self assert: account AccountSummary = expectedResult ! !
+	self assert: account accountSummary = expectedResult ! !
 
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:21'!
-test04
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test03CuentaConUnaExtraccionRespondeSuResumen
+
+	| account expectedResult |
+	account := ReceptiveAccount new.
+	
+	Withdraw register: 10 * peso on: account.
+	
+	expectedResult := OrderedCollection with: 'Extracción por 10 * pesos' with: 'Balance = -10 * pesos'.
+	
+	self assert: account accountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test04CuentaConUnaSalidaPorTransferenciaRespondeSuResumen
+
+	| account otherAccount expectedResult |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount .
+	
+	expectedResult := OrderedCollection with: 'Salida por transferencia de 20 * pesos' with: 'Balance = -20 * pesos'.
+	
+	self assert: account accountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test05CuentaConUnaEntradaPorTransferenciaRespondeSuResumen
+
+	| account otherAccount expectedResult |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: otherAccount to: account .
+	
+	expectedResult := OrderedCollection with: 'Entrada por transferencia de 20 * pesos' with: 'Balance = 20 * pesos'.
+	
+	self assert: account accountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test06CuentaConTransaccionesRespondeSuResumen
 
 	| account expectedResult otherAccount |
 	account := ReceptiveAccount new.
@@ -357,12 +463,11 @@ test04
 						with: 'Salida por transferencia de 20 * pesos'
 						with: 'Entrada por transferencia de 30 * pesos'
 						with: 'Balance = 60 * pesos'.
-	
-	self assert: account AccountSummary size = 5.
-	self assert: account AccountSummary = expectedResult ! !
 
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:12'!
-test05
+	self assert: account accountSummary = expectedResult ! !
+
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test07PorfolioConUnaCuentaRespondeSuResumen
 
 	| account expectedResult otherAccount portfolio |
 	account := ReceptiveAccount new.
@@ -382,11 +487,10 @@ test05
 						with: 'Entrada por transferencia de 30 * pesos'
 						with: 'Balance = 60 * pesos'.
 	
-	self assert: portfolio AccountSummary size = 5.
-	self assert: portfolio AccountSummary = expectedResult ! !
+	self assert: portfolio accountSummary = expectedResult ! !
 
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:55:05'!
-test06
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test08PorfolioConCuentasRespondeSuResumen
 
 	| account expectedResult otherAccount portfolio |
 	account := ReceptiveAccount new.
@@ -408,10 +512,10 @@ test06
 						with: 'Salida por transferencia de 30 * pesos'.
 	expectedResult add: 'Balance = 50 * pesos'.
 	
-	self assert: portfolio AccountSummary = expectedResult ! !
+	self assert: portfolio accountSummary = expectedResult ! !
 
-!ReportTest methodsFor: 'test' stamp: 'e 6/10/2022 18:54:59'!
-test07
+!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/15/2022 17:31:06'!
+test09PorfolioConOtroPorfolioRespondeSuResumen
 
 	| account expectedResult otherAccount portfolio otherPortfolio |
 	account := ReceptiveAccount new.
@@ -435,7 +539,7 @@ test07
 						with: 'Salida por transferencia de 30 * pesos'.
 	expectedResult add: 'Balance = 50 * pesos'.
 	
-	self assert: portfolio AccountSummary = expectedResult ! !
+	self assert: portfolio accountSummary = expectedResult ! !
 
 
 !classDefinition: #TransferTest category: 'ServiciosFinancieros-Solucion'!
@@ -692,8 +796,8 @@ signalCanNotAddAccount
 	self error: self class canNotAddAccountErrorMessage! !
 
 
-!Portfolio methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:57:33'!
-AccountSummary
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'e 6/15/2022 17:31:06'!
+accountSummary
 	
 	| accountsSummary aBalance|
 	
@@ -711,6 +815,18 @@ summary
 	accounts do: [ :anAccount | accountsSummary addAll: anAccount summary].
 	
 	^accountsSummary ! !
+
+!Portfolio methodsFor: 'as yet unclassified' stamp: 'e 6/15/2022 17:56:39'!
+transferNet
+	
+	| balance |
+	balance := 0.
+	self transactions do: [ :aTransaction | 
+		(aTransaction isKindOf: TransferLeg) ifTrue: [
+			balance := aTransaction affectBalance: balance
+		]
+	].
+	^balance! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -795,8 +911,8 @@ isComposedBy: anAccount
 	^self = anAccount ! !
 
 
-!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'e 6/10/2022 18:57:18'!
-AccountSummary
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'e 6/15/2022 17:31:06'!
+accountSummary
 	
 	| accountSummary aBalance |
 	
@@ -815,6 +931,19 @@ summary
 	accountSummary := OrderedCollection new.
 	transactions do: [ :aTransaction | accountSummary add: aTransaction report].
 	^accountSummary! !
+
+!ReceptiveAccount methodsFor: 'as yet unclassified' stamp: 'e 6/15/2022 18:14:27'!
+transferNet
+
+	^transactions 
+		inject: 0 * peso 
+		into: [ :aBalance :aTransaction | 
+			(aTransaction isKindOf: TransferLeg) ifTrue: [
+				aTransaction affectBalance: aBalance
+			] ifFalse: [
+				aBalance 
+			]
+		].! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Solucion'!
