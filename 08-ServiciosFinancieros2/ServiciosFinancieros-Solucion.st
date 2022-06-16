@@ -1,3 +1,265 @@
+!classDefinition: #AccountReportTest category: 'ServiciosFinancieros-Solucion'!
+TestCase subclass: #AccountReportTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Solucion'!
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:43'!
+test01CuentaSinTransaccionesRespondeSuResumen
+
+	| account anAccountSummary |
+	account := ReceptiveAccount new.
+	
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	self assert: anAccountSummary report size = 1.
+	self assert: anAccountSummary report first = 'Balance = 0 * pesos'! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test02CuentaConUnDepositoRespondeSuResumen
+
+	| account expectedResult anAccountSummary |
+	account := ReceptiveAccount new.
+	
+	Deposit register: 100 * peso on: account.
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	expectedResult := OrderedCollection with: 'Depósito por 100 * pesos' with: 'Balance = 100 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test03CuentaConUnaExtraccionRespondeSuResumen
+
+	| account expectedResult anAccountSummary |
+	account := ReceptiveAccount new.
+	
+	Withdraw register: 10 * peso on: account.
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	expectedResult := OrderedCollection with: 'Extracción por 10 * pesos' with: 'Balance = -10 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:43'!
+test04CuentaConUnaSalidaPorTransferenciaRespondeSuResumen
+
+	| account otherAccount expectedResult anAccountSummary |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount .
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	expectedResult := OrderedCollection with: 'Salida por transferencia de 20 * pesos' with: 'Balance = -20 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test05CuentaConUnaEntradaPorTransferenciaRespondeSuResumen
+
+	| account otherAccount expectedResult anAccountSummary |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: otherAccount to: account .
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	expectedResult := OrderedCollection with: 'Entrada por transferencia de 20 * pesos' with: 'Balance = 20 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test06CuentaConTransaccionesRespondeSuResumen
+
+	| account expectedResult otherAccount anAccountSummary |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	anAccountSummary := AccountSummaryReport for: account.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Balance = 60 * pesos'.
+
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test07PorfolioConUnaCuentaRespondeSuResumen
+
+	| account expectedResult otherAccount portfolio anAccountSummary |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	portfolio := Portfolio with: account.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	anAccountSummary := AccountSummaryReport for: portfolio.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Balance = 60 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:43'!
+test08PorfolioConCuentasRespondeSuResumen
+
+	| account expectedResult otherAccount portfolio anAccountSummary |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	portfolio := Portfolio with: account with: otherAccount .
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	anAccountSummary := AccountSummaryReport for: portfolio .
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Entrada por transferencia de 20 * pesos'
+						with: 'Salida por transferencia de 30 * pesos'.
+	expectedResult add: 'Balance = 50 * pesos'.
+	
+	self assert: anAccountSummary report = expectedResult ! !
+
+!AccountReportTest methodsFor: 'test - resumen de cuenta' stamp: 'e 6/16/2022 16:23:44'!
+test09PorfolioConOtroPorfolioRespondeSuResumen
+
+	| account expectedResult otherAccount portfolio otherPortfolio aAccountSummary |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	otherPortfolio := Portfolio with: otherAccount. 
+	portfolio := Portfolio with: account with: otherPortfolio.
+		
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	
+	aAccountSummary := AccountSummaryReport for: portfolio.
+	
+	expectedResult := OrderedCollection 
+						with: 'Depósito por 100 * pesos'
+						with: 'Extracción por 50 * pesos'
+						with: 'Salida por transferencia de 20 * pesos'
+						with: 'Entrada por transferencia de 30 * pesos'
+						with: 'Entrada por transferencia de 20 * pesos'
+						with: 'Salida por transferencia de 30 * pesos'.
+	expectedResult add: 'Balance = 50 * pesos'.
+	
+	self assert: aAccountSummary report = expectedResult ! !
+
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test10CuentaSinTransaccionesRespondeSuNetoDeTransferencias
+
+	| account aAccountReport |
+	account := ReceptiveAccount new.
+	aAccountReport := TransferNetReport for: account.
+
+	self assert: aAccountReport report equals: (0 * peso)! !
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test11CuentaConEntradaPorTransferenciaRespondeSuNetoDeTransferencias
+
+	| account otherAccount aAccountReport |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: otherAccount to: account .
+	aAccountReport := TransferNetReport for: account.
+	
+	self assert: aAccountReport report = (20 * peso) 
+! !
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test12CuentaConSalidaPorTransferenciaRespondeSuNetoDeTransferencias
+
+	| account otherAccount aAccountReport |
+	
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount .
+	aAccountReport := TransferNetReport for: account.
+	
+	self assert: aAccountReport report = (-20 * peso) ! !
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test13CuentaSinTransferenciasRespondeSuNetoDeTransferencias
+
+	| account aAccountReport |
+	
+	account := ReceptiveAccount new.
+	
+	Deposit register: 10 * peso on: account.
+	Withdraw register: 10 * peso on: account .
+	aAccountReport := TransferNetReport for: account.
+	
+	self assert: aAccountReport report = (0 * peso) ! !
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test14CuentaConVariasTransaccionesRespondeSuNetoPorTransferencias
+
+	| account otherAccount aAccountReport |
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	aAccountReport := TransferNetReport for: account.
+
+	
+	self assert: aAccountReport report equals: (10 * peso)! !
+
+!AccountReportTest methodsFor: 'test - neto de transferencias' stamp: 'e 6/16/2022 16:26:45'!
+test15PorfolioConUnaCuentaRespondeSuNetoPorTransferencia
+
+	| account otherAccount portfolio aAccountReport |
+
+	account := ReceptiveAccount new.
+	otherAccount := ReceptiveAccount new.	
+	portfolio := Portfolio with: account.
+	
+	Transfer amount: 20 * peso from: account to: otherAccount.
+	Transfer amount: 30 * peso from: otherAccount to: account.
+	Deposit register: 100 * peso on: account.
+	Withdraw register: 50 * peso on: account.
+	
+	aAccountReport := TransferNetReport for: portfolio.
+	
+	
+	self assert: aAccountReport report equals: (10 * peso) ! !
+
+
 !classDefinition: #PortfolioTest category: 'ServiciosFinancieros-Solucion'!
 TestCase subclass: #PortfolioTest
 	instanceVariableNames: ''
@@ -300,265 +562,6 @@ test07AccountKnowsItsTransactions
 	self assert: 1 equals: account transactions size.
 	self assert: (account transactions includes: deposit).
 ! !
-
-
-!classDefinition: #ReportTest category: 'ServiciosFinancieros-Solucion'!
-TestCase subclass: #ReportTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ServiciosFinancieros-Solucion'!
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:45:19'!
-test10CuentaSinTransaccionesRespondeSuNetoDeTransferencias
-
-	| aAccount aAccountReport |
-	aAccount := ReceptiveAccount new.
-	aAccountReport := AccountReport with: aAccount.
-
-	self assert: aAccountReport transferNet equals: (0 * peso)! !
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:49:30'!
-test11CuentaConEntradaPorTransferenciaRespondeSuNetoDeTransferencias
-
-	| account otherAccount aAccountReport |
-	
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	Transfer amount: 20 * peso from: otherAccount to: account .
-	aAccountReport := AccountReport with: account.
-	
-	self assert: aAccountReport transferNet = (20 * peso) 
-! !
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:49:51'!
-test12CuentaConSalidaPorTransferenciaRespondeSuNetoDeTransferencias
-
-	| account otherAccount aAccountReport |
-	
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	Transfer amount: 20 * peso from: account to: otherAccount .
-	aAccountReport := AccountReport with: account.
-	
-	self assert: aAccountReport transferNet = (-20 * peso) ! !
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:50:09'!
-test13CuentaSinTransferenciasRespondeSuNetoDeTransferencias
-
-	| account aAccountReport |
-	
-	account := ReceptiveAccount new.
-	
-	Deposit register: 10 * peso on: account.
-	Withdraw register: 10 * peso on: account .
-	aAccountReport := AccountReport with: account.
-	
-	self assert: aAccountReport transferNet = (0 * peso) ! !
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:50:28'!
-test14CuentaConVariasTransaccionesRespondeSuNetoPorTransferencias
-
-	| account otherAccount aAccountReport |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	aAccountReport := AccountReport with: account.
-
-	
-	self assert: aAccountReport transferNet equals: (10 * peso)! !
-
-!ReportTest methodsFor: 'test - neto de transferencias' stamp: 'am 6/15/2022 19:51:10'!
-test15PorfolioConUnaCuentaRespondeSuNetoPorTransferencia
-
-	| account otherAccount portfolio aAccountReport |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	portfolio := Portfolio with: account.
-	
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	aAccountReport := AccountReport with: portfolio .
-	
-	
-	self assert: aAccountReport transferNet equals: (10 * peso) ! !
-
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test01CuentaSinTransaccionesRespondeSuResumen
-
-	| account aSummary |
-	account := ReceptiveAccount new.
-	
-	aSummary := AccountReport with: account.
-	
-	self assert: aSummary accountSummary size = 1.
-	self assert: aSummary accountSummary first = 'Balance = 0 * pesos'! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test02CuentaConUnDepositoRespondeSuResumen
-
-	| account expectedResult aSummary |
-	account := ReceptiveAccount new.
-	
-	Deposit register: 100 * peso on: account.
-	aSummary := AccountReport with: account.
-	
-	expectedResult := OrderedCollection with: 'Depósito por 100 * pesos' with: 'Balance = 100 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test03CuentaConUnaExtraccionRespondeSuResumen
-
-	| account expectedResult aSummary |
-	account := ReceptiveAccount new.
-	
-	Withdraw register: 10 * peso on: account.
-	aSummary := AccountReport with: account.
-	
-	expectedResult := OrderedCollection with: 'Extracción por 10 * pesos' with: 'Balance = -10 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test04CuentaConUnaSalidaPorTransferenciaRespondeSuResumen
-
-	| account otherAccount expectedResult aSummary |
-	
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	Transfer amount: 20 * peso from: account to: otherAccount .
-	aSummary := AccountReport with: account.
-	
-	expectedResult := OrderedCollection with: 'Salida por transferencia de 20 * pesos' with: 'Balance = -20 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test05CuentaConUnaEntradaPorTransferenciaRespondeSuResumen
-
-	| account otherAccount expectedResult aSummary |
-	
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	Transfer amount: 20 * peso from: otherAccount to: account .
-	aSummary := AccountReport with: account.
-	
-	expectedResult := OrderedCollection with: 'Entrada por transferencia de 20 * pesos' with: 'Balance = 20 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test06CuentaConTransaccionesRespondeSuResumen
-
-	| account expectedResult otherAccount aSummary |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-		
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	aSummary := AccountReport with: account.
-	
-	expectedResult := OrderedCollection 
-						with: 'Depósito por 100 * pesos'
-						with: 'Extracción por 50 * pesos'
-						with: 'Salida por transferencia de 20 * pesos'
-						with: 'Entrada por transferencia de 30 * pesos'
-						with: 'Balance = 60 * pesos'.
-
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test07PorfolioConUnaCuentaRespondeSuResumen
-
-	| account expectedResult otherAccount portfolio aSummary |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	portfolio := Portfolio with: account.
-		
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	aSummary := AccountReport with: portfolio.
-	
-	expectedResult := OrderedCollection 
-						with: 'Depósito por 100 * pesos'
-						with: 'Extracción por 50 * pesos'
-						with: 'Salida por transferencia de 20 * pesos'
-						with: 'Entrada por transferencia de 30 * pesos'
-						with: 'Balance = 60 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test08PorfolioConCuentasRespondeSuResumen
-
-	| account expectedResult otherAccount portfolio aSummary |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	portfolio := Portfolio with: account with: otherAccount .
-		
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	aSummary := AccountReport with: portfolio .
-	
-	expectedResult := OrderedCollection 
-						with: 'Depósito por 100 * pesos'
-						with: 'Extracción por 50 * pesos'
-						with: 'Salida por transferencia de 20 * pesos'
-						with: 'Entrada por transferencia de 30 * pesos'
-						with: 'Entrada por transferencia de 20 * pesos'
-						with: 'Salida por transferencia de 30 * pesos'.
-	expectedResult add: 'Balance = 50 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
-
-!ReportTest methodsFor: 'test - resumen de cuenta' stamp: 'am 6/15/2022 19:44:18'!
-test09PorfolioConOtroPorfolioRespondeSuResumen
-
-	| account expectedResult otherAccount portfolio otherPortfolio aSummary |
-	account := ReceptiveAccount new.
-	otherAccount := ReceptiveAccount new.
-	
-	otherPortfolio := Portfolio with: otherAccount. 
-	
-	portfolio := Portfolio with: account with: otherPortfolio.
-		
-	Deposit register: 100 * peso on: account.
-	Withdraw register: 50 * peso on: account.
-	Transfer amount: 20 * peso from: account to: otherAccount.
-	Transfer amount: 30 * peso from: otherAccount to: account.
-	aSummary := AccountReport with: portfolio.
-	
-	expectedResult := OrderedCollection 
-						with: 'Depósito por 100 * pesos'
-						with: 'Extracción por 50 * pesos'
-						with: 'Salida por transferencia de 20 * pesos'
-						with: 'Entrada por transferencia de 30 * pesos'
-						with: 'Entrada por transferencia de 20 * pesos'
-						with: 'Salida por transferencia de 30 * pesos'.
-	expectedResult add: 'Balance = 50 * pesos'.
-	
-	self assert: aSummary accountSummary = expectedResult ! !
 
 
 !classDefinition: #TransferTest category: 'ServiciosFinancieros-Solucion'!
@@ -896,73 +899,154 @@ isComposedBy: anAccount
 
 	^self = anAccount ! !
 
-
 
 !classDefinition: #AccountReport category: 'ServiciosFinancieros-Solucion'!
 Object subclass: #AccountReport
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Solucion'!
+
+!AccountReport methodsFor: 'report' stamp: 'e 6/16/2022 16:28:26'!
+report
+
+	self subclassResponsibility ! !
+
+
+!AccountReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:28:47'!
+visitWhenDeposit: aDeposit
+
+	self subclassResponsibility ! !
+
+!AccountReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:29:11'!
+visitWhenTransferDepositLeg: aTransferDepositLeg
+
+	self subclassResponsibility ! !
+
+!AccountReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:29:20'!
+visitWhenTransferWithdrawLeg: aTransferWithdrawLeg
+
+	self subclassResponsibility ! !
+
+!AccountReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:29:29'!
+visitWhenWithdraw: aWithdraw
+
+	self subclassResponsibility ! !
+
+
+!classDefinition: #AccountSummaryReport category: 'ServiciosFinancieros-Solucion'!
+AccountReport subclass: #AccountSummaryReport
 	instanceVariableNames: 'account'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
 
-!AccountReport methodsFor: 'initialization' stamp: 'am 6/15/2022 19:32:58'!
-initializeWith: aAccount 
+!AccountSummaryReport methodsFor: 'initialization' stamp: 'e 6/16/2022 15:27:18'!
+initializeFor: anAccount 
+	
+	account := anAccount.! !
 
-	account := aAccount.! !
 
-
-!AccountReport methodsFor: 'main protocol' stamp: 'am 6/15/2022 20:46:41'!
-accountSummary
+!AccountSummaryReport methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+report
 	
 	| accountSummary aBalance |
 	
 	accountSummary := OrderedCollection new.
-	account transactions do: [ :aTransaction | accountSummary add: (aTransaction reportTo: self)].
+	account transactions do: [ :aTransaction | accountSummary add: (aTransaction contributeTo: self)].
 	
 	aBalance := account balance asString.
 	accountSummary add: 'Balance = ', aBalance.
-	^accountSummary 
-! !
-
-!AccountReport methodsFor: 'main protocol' stamp: 'am 6/15/2022 20:07:22'!
-transferNet
-
-		^account transactions 
-			inject: 0 * peso 
-			into: [ :aBalance :aTransaction | 
-				aTransaction affectTransferenceBalance: aBalance].! !
+	^accountSummary ! !
 
 
-!AccountReport methodsFor: 'report' stamp: 'am 6/15/2022 20:27:11'!
-reportWhenDeposit: aDeposit
+!AccountSummaryReport methodsFor: 'visitors' stamp: 'e 6/16/2022 15:37:37'!
+visitWhenDeposit: aDeposit
 
 	^'Depósito por ', (aDeposit value asString)! !
 
-!AccountReport methodsFor: 'report' stamp: 'am 6/15/2022 20:31:48'!
-reportWhenTransferDepositLeg: aTransferDepositLeg
+!AccountSummaryReport methodsFor: 'visitors' stamp: 'e 6/16/2022 15:38:02'!
+visitWhenTransferDepositLeg: aTransferDepositLeg
 
 	^'Entrada por transferencia de ', (aTransferDepositLeg value asString)! !
 
-!AccountReport methodsFor: 'report' stamp: 'am 6/15/2022 20:32:47'!
-reportWhenTransferWithdrawLeg: aTransferWithdrawLeg
+!AccountSummaryReport methodsFor: 'visitors' stamp: 'e 6/16/2022 15:38:18'!
+visitWhenTransferWithdrawLeg: aTransferWithdrawLeg
 
 	^'Salida por transferencia de ', (aTransferWithdrawLeg value asString)! !
 
-!AccountReport methodsFor: 'report' stamp: 'am 6/15/2022 20:33:17'!
-reportWhenWithdraw: aWithdraw
+!AccountSummaryReport methodsFor: 'visitors' stamp: 'e 6/16/2022 15:38:31'!
+visitWhenWithdraw: aWithdraw
 
 	^'Extracción por ', (aWithdraw value asString)! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'AccountReport class' category: 'ServiciosFinancieros-Solucion'!
-AccountReport class
+!classDefinition: 'AccountSummaryReport class' category: 'ServiciosFinancieros-Solucion'!
+AccountSummaryReport class
 	instanceVariableNames: ''!
 
-!AccountReport class methodsFor: 'instance creation' stamp: 'am 6/15/2022 19:31:05'!
-with: aAccount 
+!AccountSummaryReport class methodsFor: 'instance creation' stamp: 'e 6/16/2022 15:27:04'!
+for: anAccount 
+	
+	^self new initializeFor: anAccount ! !
 
-	^self new initializeWith: aAccount ! !
+
+!classDefinition: #TransferNetReport category: 'ServiciosFinancieros-Solucion'!
+AccountReport subclass: #TransferNetReport
+	instanceVariableNames: 'account'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ServiciosFinancieros-Solucion'!
+
+!TransferNetReport methodsFor: 'initialization' stamp: 'e 6/16/2022 16:02:12'!
+initializeFor: anAccount 
+	
+	account := anAccount.! !
+
+
+!TransferNetReport methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+report
+
+	| aBalance |
+	
+	aBalance := 0 * peso.
+	account transactions do: [ :aTransaction | 
+		aBalance := aBalance + (aTransaction contributeTo: self)
+	].
+	^aBalance! !
+
+
+!TransferNetReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:02:35'!
+visitWhenDeposit: aDeposit
+
+	^ 0 * peso! !
+
+!TransferNetReport methodsFor: 'visitors' stamp: 'e 6/16/2022 15:58:28'!
+visitWhenTransferDepositLeg: aTransferDepositLeg
+
+	^ aTransferDepositLeg value! !
+
+!TransferNetReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:05:56'!
+visitWhenTransferWithdrawLeg: aTransferWithdrawLeg
+
+	^ aTransferWithdrawLeg value negated! !
+
+!TransferNetReport methodsFor: 'visitors' stamp: 'e 6/16/2022 16:02:41'!
+visitWhenWithdraw: aWithdraw
+
+	^ 0 * peso! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'TransferNetReport class' category: 'ServiciosFinancieros-Solucion'!
+TransferNetReport class
+	instanceVariableNames: ''!
+
+!TransferNetReport class methodsFor: 'instance creation' stamp: 'e 6/16/2022 16:01:55'!
+for: anAccount 
+
+	^self new initializeFor: anAccount ! !
 
 
 !classDefinition: #AccountTransaction category: 'ServiciosFinancieros-Solucion'!
@@ -983,17 +1067,11 @@ affectBalance: aBalance
 
 	self subclassResponsibility ! !
 
-!AccountTransaction methodsFor: 'balance' stamp: 'am 6/15/2022 20:11:40'!
-affectTransferenceBalance: aBalance
+
+!AccountTransaction methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+contributeTo: aAccountReport
 
 	self subclassResponsibility ! !
-
-
-!AccountTransaction methodsFor: 'report' stamp: 'am 6/15/2022 20:46:41'!
-reportTo: aAccountReport
-
-	self subclassResponsibility 
-! !
 
 
 !classDefinition: #Deposit category: 'ServiciosFinancieros-Solucion'!
@@ -1020,20 +1098,11 @@ affectBalance: aBalance
 
 	^aBalance + value ! !
 
-!Deposit methodsFor: 'balance' stamp: 'am 6/15/2022 20:12:21'!
-affectTransferenceBalance: aBalance
 
-	^aBalance! !
+!Deposit methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+contributeTo: aAccountReport
 
-
-!Deposit methodsFor: 'as yet unclassified' stamp: 'am 6/15/2022 20:46:41'!
-reportTo: aAccountReport
-
-	^ aAccountReport reportWhenDeposit: self.
-
-	
-	
-	"^'Depósito por ', (self value asString)"! !
+	^ aAccountReport visitWhenDeposit: self! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1064,11 +1133,6 @@ AccountTransaction subclass: #TransferLeg
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'ServiciosFinancieros-Solucion'!
-
-!TransferLeg methodsFor: 'value' stamp: 'am 6/15/2022 20:06:09'!
-affectTransferenceBalance: aBalance
-
-	^self affectBalance: aBalance! !
 
 !TransferLeg methodsFor: 'value' stamp: 'LL 9/20/2020 22:27:32'!
 value
@@ -1117,13 +1181,11 @@ affectBalance: aBalance
 	^aBalance + self value! !
 
 
-!TransferDepositLeg methodsFor: 'as yet unclassified' stamp: 'am 6/15/2022 20:46:41'!
-reportTo: aAccountReport
+!TransferDepositLeg methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+contributeTo: aAccountReport
 	
 
-	^ aAccountReport reportWhenTransferDepositLeg: self.
-	
-	"^'Entrada por transferencia de ', (self value asString)"! !
+	^ aAccountReport visitWhenTransferDepositLeg: self.! !
 
 
 !classDefinition: #TransferWithdrawLeg category: 'ServiciosFinancieros-Solucion'!
@@ -1145,11 +1207,11 @@ affectBalance: aBalance
 	^aBalance - self value! !
 
 
-!TransferWithdrawLeg methodsFor: 'as yet unclassified' stamp: 'am 6/15/2022 20:46:41'!
-reportTo: aAccountReport
+!TransferWithdrawLeg methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+contributeTo: aAccountReport
 	
 
-	^ aAccountReport reportWhenTransferWithdrawLeg: self.! !
+	^ aAccountReport visitWhenTransferWithdrawLeg: self.! !
 
 
 !classDefinition: #Withdraw category: 'ServiciosFinancieros-Solucion'!
@@ -1176,16 +1238,11 @@ affectBalance: aBalance
 
 	^aBalance - value! !
 
-!Withdraw methodsFor: 'balance' stamp: 'am 6/15/2022 20:12:08'!
-affectTransferenceBalance: aBalance
 
-	^aBalance! !
+!Withdraw methodsFor: 'report' stamp: 'e 6/16/2022 16:43:54'!
+contributeTo: aAccountReport
 
-
-!Withdraw methodsFor: 'as yet unclassified' stamp: 'am 6/15/2022 20:46:41'!
-reportTo: aAccountReport
-
-	^ aAccountReport reportWhenWithdraw: self.
+	^ aAccountReport visitWhenWithdraw: self.
 ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
